@@ -50,13 +50,7 @@ int current_mode_has_spsr(registers r) {
 int in_a_privileged_mode(registers r) {
     return r->mode != USR;
 }
-#define USR 0x10
-#define SYS 0x1f
-#define SVC 0x13
-#define ABT 0x17
-#define UND 0x1b
-#define IRQ 0x12
-#define FIQ 0x11
+
 int mode_offset(uint8_t mode) {
 	if (USR) return 0;
 	if (SYS) return 0;
@@ -69,10 +63,8 @@ int mode_offset(uint8_t mode) {
 }
 
 uint32_t read_register(registers r, uint8_t reg) {
-    if (reg == 13 || reg == 14) {
+    if (reg == 13 || reg == 14 ||  (8 <= reg && reg <= 12 && r->mode==FIQ)) {
     	return r->r[reg+mode_offset(r->mode)];
-    } else if (8 <= reg && reg <= 12 && r->mode==FIQ) {
-    	return r->r[reg+16];
     } else {
     	return r->r[reg];
    	}
@@ -95,10 +87,8 @@ uint32_t read_spsr(registers r) {
 }
 
 void write_register(registers r, uint8_t reg, uint32_t value) {
-	if (reg == 13 || reg == 14) {
+	if (reg == 13 || reg == 14 ||  (8 <= reg && reg <= 12 && r->mode==FIQ)) {
     	r->r[reg+mode_offset(r->mode)]=value;
-    } else if (8 <= reg && reg <= 12 && r->mode==FIQ) {
-    	r->r[reg+16]=value;
     } else {
     	r->r[reg]=value;
    	}
