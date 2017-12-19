@@ -26,9 +26,15 @@ Contact: Guillaume.Huard@imag.fr
 #include <debug.h>
 #include <stdlib.h>
 
+#define MASK_LINK 0b1 << 24
+#define MASK_TARGET_ADR ~(0b0 << 23)
 
 int arm_branch(arm_core p, uint32_t ins) {
-    return UNDEFINED_INSTRUCTION;
+	if ((MASK_LINK & ins)>>24){
+		arm_write_register(p, 14, ins))
+	}
+	arm_write_register(p, 15, (ins & MASK_TARGET_ADR))
+    return 1;
 }
 
 int arm_coprocessor_others_swi(arm_core p, uint32_t ins) {
