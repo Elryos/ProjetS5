@@ -24,19 +24,6 @@ Contact: Guillaume.Huard@imag.fr
 #include "memory.h"
 #include "util.h"
 
-int reverse_endianess(int value)
-{
-  int resultat = 0;
-  char *source, *destination;
-  int i;
-
-  source = (char *) &value;
-  destination = ((char *) &resultat)+sizeof(int);
-  for (i=0; i<sizeof(int); i++)
-      *(--destination) = *(source++);
-  return resultat;
-}
-
 struct memory_data {
     uint8_t * m;
     int is_big_endian;
