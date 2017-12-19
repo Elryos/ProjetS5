@@ -50,11 +50,32 @@ int current_mode_has_spsr(registers r) {
 int in_a_privileged_mode(registers r) {
     return r->mode != USR;
 }
+#define USR 0x10
+#define SYS 0x1f
+#define SVC 0x13
+#define ABT 0x17
+#define UND 0x1b
+#define IRQ 0x12
+#define FIQ 0x11
+int mode_offset(uint8_t mode) {
+	if (USR) return 0;
+	if (SYS) return 0;
+	if (SVC) return 3;
+	if (ABT) return 5;
+	if (UND) return 7;
+	if (IRQ) return 9;
+	if (FIQ) return 16;
+
+}
 
 uint32_t read_register(registers r, uint8_t reg) {
-    uint32_t value=0;
-    return value;
-	/*ICI*/
+    if (reg == 13 || reg == 14) {
+    	return r->r[reg+mode_offset(r->mode)];
+    } else if (8 <= reg && reg <= 12 && r->mode==FIQ) {
+    	return r->r[reg+16];
+    } else {
+    	return r->r[reg];
+   	}
 }
 
 uint32_t read_usr_register(registers r, uint8_t reg) {
@@ -62,18 +83,25 @@ uint32_t read_usr_register(registers r, uint8_t reg) {
 }
 
 uint32_t read_cpsr(registers r) {
-    return r->r[16];
+    return r->r[31];
 }
 
 uint32_t read_spsr(registers r) {
-    uint32_t value=0;
-    return value;
-	/*ICI*/
+    if (SVC) return r->r[32];
+	if (ABT) return r->r[33];
+	if (UND) return r->r[34];
+	if (IRQ) return r->r[35];
+	if (FIQ) return r->r[36];
 }
 
 void write_register(registers r, uint8_t reg, uint32_t value) {
-	/*ICI*/
-
+	if (reg == 13 || reg == 14) {
+    	r->r[reg+mode_offset(r->mode)]=value;
+    } else if (8 <= reg && reg <= 12 && r->mode==FIQ) {
+    	r->r[reg+16]=value;
+    } else {
+    	r->r[reg]=value;
+   	}
 }
 
 void write_usr_register(registers r, uint8_t reg, uint32_t value) {
@@ -81,9 +109,13 @@ void write_usr_register(registers r, uint8_t reg, uint32_t value) {
 }
 
 void write_cpsr(registers r, uint32_t value) {
-	r->r[16]=value;
+	r->r[31]=value;
 }
 
 void write_spsr(registers r, uint32_t value) {
-	/*ICI*/
+    if (SVC) r->r[32] = value;
+	if (ABT) r->r[33] = value;
+	if (UND) r->r[34] = value;
+	if (IRQ) r->r[35] = value;
+	if (FIQ) r->r[36] = value;
 }
