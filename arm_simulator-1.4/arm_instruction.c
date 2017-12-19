@@ -43,9 +43,9 @@ static int arm_execute_instruction(arm_core p) {
 
     if (arm_fetch(p, &ins)) return 1;
     
-    switch (ins && MASK_TYPE >> 25) {
+    switch (ins & MASK_TYPE >> 25) {
     	case(DATA_PROCESSING) :
-    		if (ins && MASK_SHIFT >> 4) {
+    		if (ins & MASK_SHIFT >> 4) {
     			arm_data_processing_shift(p, ins);
     		} else {
     			arm_data_processing_immediate_msr(p, ins);
