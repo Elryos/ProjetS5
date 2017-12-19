@@ -29,6 +29,7 @@ Contact: Guillaume.Huard@imag.fr
 #include "trace.h"
 #include <stdlib.h>
 
+
 struct arm_core_data {
     uint32_t cycle_count;
     registers reg;
