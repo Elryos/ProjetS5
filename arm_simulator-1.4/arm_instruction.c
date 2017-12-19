@@ -36,7 +36,6 @@ Contact: Guillaume.Huard@imag.fr
 #define MASK_C 0b1 << 29
 #define MASK_V 0b1 << 28
 #define MASK_TYPE 0b111 << 25
-#define MASK_SHIFT 0b1 << 4
 
 #define EQ 0b0000	// Equal / equals zero	Z
 #define NE 0b0001	// Not equal	!Z
@@ -128,7 +127,12 @@ static int arm_execute_instruction(arm_core p) {
 
     switch (ins & MASK_TYPE >> 25) {
     	case(DATA_PROCESSING_SHIFT) :
-    		arm_data_processing_shift(p, ins);
+    		// CAS PARTICULIER LDRH, STRH
+    		if ((ins >> 4 & 1) && (ins >> 7 & 1)) {
+    			arm_load_store(p,ins);
+    		} else {
+    			arm_data_processing_shift(p, ins);
+    		}
     		break;
     	case(DATA_PROCESSING_IMMEDIATE)	:
     		arm_data_processing_immediate_msr(p, ins);

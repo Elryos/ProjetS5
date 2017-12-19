@@ -27,6 +27,41 @@ Contact: Guillaume.Huard@imag.fr
 #include "util.h"
 #include "debug.h"
 
+#define MASK_RM 0b1111 << 0
+#define MASK_IMMEDIATE 0b1 << 4
+#define MASK_SHIFT 0b11 << 5
+#define MASK_RS_IMMEDIATE 0b11111 << 7
+#define MASK_RS_REGISTER 0b1111 << 8
+// #define LSL 0b00
+// #define LSR 0b01
+// #define ASR 0b10
+// #define ROR 0b11
+
+int shifter_operand(arm_core p, uint32_t ins) {
+	uint8_t Rm = arm_read_register(p, ins & MASK_RM >> 0);
+	uint32_t Rs;
+
+	if (ins & MASK_IMMEDIATE >> 4) {
+		Rs = ins & MASK_RS_IMMEDIATE >> 7;
+	} else {
+		Rs = arm_read_register(p, ins & MASK_RS_REGISTER >> 8);
+	}
+
+	switch (ins & MASK_SHIFT >> 5) {
+		case (LSL) :
+			return Rm << Rs;
+		case (LSR) :
+			return Rm >> Rs;
+		case (ASR) :
+			return asr(Rm, Rs);
+		case (ROR) :
+			return ror(Rm, Rs);
+		default :
+			return 1;
+	}
+	return 0;
+}
+
 /* Decoding functions for different classes of instructions */
 int arm_data_processing_shift(arm_core p, uint32_t ins) {
     return UNDEFINED_INSTRUCTION;
