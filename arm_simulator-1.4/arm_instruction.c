@@ -37,10 +37,12 @@ Contact: Guillaume.Huard@imag.fr
 #define LOAD_STORE_MULTIPLE 0b100
 #define BRANCH 0b101
 #define COPROCESSOR_OTHERS_SWI 0b111
+
 static int arm_execute_instruction(arm_core p) {
     uint32_t ins;
 
-    arm_fetch(p, &ins);
+    if (arm_fetch(p, &ins)) return 1;
+    
     switch (ins && MASK_TYPE >> 25) {
     	case(DATA_PROCESSING) :
     		if (ins && MASK_SHIFT >> 4) {
