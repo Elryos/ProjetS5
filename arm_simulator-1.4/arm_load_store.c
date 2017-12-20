@@ -26,7 +26,36 @@ Contact: Guillaume.Huard@imag.fr
 #include "util.h"
 #include "debug.h"
 
-int arm_load_store(arm_core p, uint32_t ins) {
+#define LS 0b1 <<20
+#define BYTE 0b1 <<22
+#define HALF 0b1001 <<4
+#define ADR_MOD 0b11001 <<21
+
+#define IMM_PRE 0b01
+#define REG_SCA_PRE 0b11
+#define IMM_POS 0b00
+#define REG_SCA_POS 0b10
+
+int arm_load_store(arm_core p, uint32_t ins) {	
+	/*int res;
+	if ((ins & HALF >> 4) == 0b1001){
+		if(ins & LS >>20){
+			res=arm_LDRH(p,ins);
+		}
+		else{
+			res=arm_STRH(p,ins);
+		}
+	}
+	else{
+	    switch(ins & BYTE >>22){
+	    	case(1) :
+	    		res=arm_LDRB_STRB(p,ins);
+	    		break;
+	    	case(0) :
+	    		res=arm_LDR_STR(p,ins);
+	    		break;
+	    }
+	}*/
     return UNDEFINED_INSTRUCTION;
 }
 
@@ -38,3 +67,11 @@ int arm_coprocessor_load_store(arm_core p, uint32_t ins) {
     /* Not implemented */
     return UNDEFINED_INSTRUCTION;
 }
+
+/*int arm_LDR_STR (arm_core p,uint32_t ins){
+	switch(ins & ADR_MOD){
+		case(IMM_PRE) :
+			
+	}
+}
+*/
