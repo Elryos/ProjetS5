@@ -64,10 +64,10 @@ uint32_t change_bit(uint32_t s, uint8_t n, uint8_t v) {
 void flags_update(arm_core p, uint64_t res) {
 	uint32_t cpsr = arm_read_cpsr(p);
 	
-	change_bit(cpsr, N, res >> 32 & 1);
+	change_bit(cpsr, N, res >> 31 & 1);
 	change_bit(cpsr, Z, res==0);
-	change_bit(cpsr, C, res >> 31 & 1);
-	change_bit(cpsr, V, (res >> 31 & 1) != (res >> 31 & 1));
+	change_bit(cpsr, C, res >> 32 & 1);
+	change_bit(cpsr, V, (res >> 31 & 1) == (res >> 32 & 1));
 
 	arm_write_cpsr(p, cpsr);
 
