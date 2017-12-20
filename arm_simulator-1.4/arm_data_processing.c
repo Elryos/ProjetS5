@@ -33,8 +33,8 @@ Contact: Guillaume.Huard@imag.fr
 #define MASK_SHIFT 0b11 << 5
 #define MASK_RS_IMMEDIATE 0b11111 << 7
 #define MASK_RS_REGISTER 0b1111 << 8
-#define MASK_C_1 0b << 28
-#define MASK_C_0 0b1 << 28
+#define MASK_I 0b1 << 25
+
 
 #define MASK_OPCODE 0b1111 << 25
 #define MASK_RN 0b1111 << 16
@@ -60,27 +60,10 @@ Contact: Guillaume.Huard@imag.fr
 
 
 
-//---------------------------INSTRUCTIONS-----------------------------//
-
-int arm_ADD(arm_core p, uint32_t Rd, uint32_t Value_Rn, uint32_t Value_RI) {
-    
-    
-    
-}
-
-
-
-
-
-
-
-
-
-
 /*--------------------------SHIFT----------------------------------*/
 
 
-uint32_t shifter_operand(arm_core p, uint32_t ins,int S) { //Rajout int S pour traiter maj de cpsr
+uint32_t shifter_operand(arm_core p, uint32_t ins) { 
 	uint32_t Rm = arm_read_register(p, ins & MASK_RM >> 0);
 	uint32_t Rs;
 
@@ -115,12 +98,16 @@ int immediate_operand(uint32_t ins) {
 
 
 
-
-/*-------------------------------Switch sur les intstructions------------------------------*/
-
-int op_switch(uint8_t op_code, uint32_t Value_Rn, uint32_t Rd, uint32_t Value_Shifter) {
-
-
+/* Decoding functions for different classes of instructions */
+int arm_data_processing(arm_core p, uint32_t ins) {
+    uint32_t Rn = arm_read_register(p, ins & MASK_RN >> 16);
+    uint8_t Rd = ins & MASK_RD >> 12;
+    uint32_t Rm;
+    if (ins & MASK_I >> 25) {
+    	Rm = immediate_operand(p, ins);
+    } else {
+    	Rm = shifter_operand(p, ins);
+    }
     switch (op_code) { 
     	case (AND) :
     		arm_write_register(p, Rd, Value_Rn & Value_Shifter);
@@ -133,6 +120,8 @@ int op_switch(uint8_t op_code, uint32_t Value_Rn, uint32_t Rd, uint32_t Value_Sh
            	arm_write_register(p,Rd,Res);
     		break;
     	case (RSB) :
+    		uint64_t Res = Value_Shifter - Value_Rn ; 
+           	arm_write_register(p,Rd,Res);
     		break;
     	case (ADD) :
             uint64_t Res = Value_Rn + Value_Shifter ; 
@@ -141,6 +130,7 @@ int op_switch(uint8_t op_code, uint32_t Value_Rn, uint32_t Rd, uint32_t Value_Sh
            	/*Appel fonction maj CPSR*/
     		break;
     	case (ADC) :
+    		carry_flag
     		break;
     	case (SBC) :
     		break;
@@ -170,27 +160,5 @@ int op_switch(uint8_t op_code, uint32_t Value_Rn, uint32_t Rd, uint32_t Value_Sh
     	// arm_write_cpsr(p, ???);
     }
     return 0;
-}
-
-
-
-
-
-
-/* Decoding functions for different classes of instructions */
-int arm_data_processing_shift(arm_core p, uint32_t ins) {
-    uint32_t Rn = arm_read_register(p, ins & MASK_RN >> 16);
-    uint8_t Rd = ins & MASK_RD >> 12;
-    uint32_t Rm = shifter_operand(p, ins);
-
-    op_switch(ins & MASK_OPCODE >> 25, Rn, Rd, Rm) ;
-}
-
-int arm_data_processing_immediate_msr(arm_core p, uint32_t ins) {
-	uint32_t Rn = arm_read_register(p, ins & MASK_RN >> 16);
-	uint8_t Rd = ins & MASK_RD >> 12;
-	uint32_t operand = immediate_operand(p, ins);
-
-    op_switch(ins & MASK_OPCODE >> 25, Rn, Rd, operand)
 }
 
