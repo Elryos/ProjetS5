@@ -57,9 +57,21 @@ Contact: Guillaume.Huard@imag.fr
 #define MVN 0b1111
 
 
+uint32_t change_bit(uint32_t s, uint8_t n, uint8_t v) {
+	return (s & ~(1 << n)) | (1 << n);
+}
 
+void flags_update(arm_core p, uint64_t res) {
+	uint32_t cpsr = arm_read_cpsr(p);
+	
+	change_bit(cpsr, N, res >> 32 & 1);
+	change_bit(cpsr, Z, res==0);
+	change_bit(cpsr, C, res >> 31 & 1);
+	change_bit(cpsr, V, (res >> 31 & 1) != (res >> 31 & 1));
 
+	arm_write_cpsr(p, cpsr);
 
+}
 
 /* Decoding functions for different classes of instructions */
 int arm_data_processing(arm_core p, uint32_t ins) {
@@ -141,7 +153,7 @@ int arm_data_processing(arm_core p, uint32_t ins) {
     }
 
     if (ins & MASK_STATUS >> 20) {
-    	// arm_write_cpsr(p, ???);
+    	flags_update(p, Res);
     }
     return 0;
 }
