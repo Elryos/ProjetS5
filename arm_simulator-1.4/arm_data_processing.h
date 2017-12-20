@@ -25,8 +25,6 @@ Contact: Guillaume.Huard@imag.fr
 #include <stdint.h>
 #include "arm_core.h"
 
-uint32_t shifter_operand(arm_core p, uint32_t ins);
-int arm_data_processing_shift(arm_core p, uint32_t ins);
-int arm_data_processing_immediate_msr(arm_core p, uint32_t ins);
+int arm_data_processing(arm_core p, uint32_t ins);
 
 #endif

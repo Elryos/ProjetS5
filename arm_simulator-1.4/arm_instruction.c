@@ -30,6 +30,12 @@ Contact: Guillaume.Huard@imag.fr
 #include "arm_core.h"
 #include "util.h"
 
+
+#define MASK_RM 0b1111 << 0
+#define MASK_IMMEDIATE 0b1 << 4
+#define MASK_SHIFT 0b11 << 5
+#define MASK_RS_IMMEDIATE 0b11111 << 7
+#define MASK_RS_REGISTER 0b1111 << 8
 #define MASK_COND 0b1111 << 28
 #define MASK_N 0b1 << 31
 #define MASK_Z 0b1 << 30
@@ -72,7 +78,7 @@ static int arm_execute_instruction(arm_core p) {
 
     if (arm_fetch(p, &ins)) return 1;
     
-    switch (ins && MASK_COND >> 28) {
+    switch (ins & MASK_COND >> 28) {
     	case (EQ) :
     		if (!z) return 0;
     		break;

@@ -29,16 +29,9 @@ Contact: Guillaume.Huard@imag.fr
 #include "util.h"
 #include "debug.h"
 
-#define MASK_RM 0b1111 << 0
-#define MASK_IMMEDIATE 0b1 << 4
-#define MASK_SHIFT 0b11 << 5
-#define MASK_RS_IMMEDIATE 0b11111 << 7
-#define MASK_RS_REGISTER 0b1111 << 8
+
 #define MASK_I 0b1 << 25
-#define MASK_N 0b1 << 31
-#define MASK_Z 0b1 << 30
 #define MASK_C 0b1 << 29
-#define MASK_V 0b1 << 28
 
 
 #define MASK_OPCODE 0b1111 << 25
@@ -64,25 +57,26 @@ Contact: Guillaume.Huard@imag.fr
 #define MVN 0b1111
 
 
+
+
+
+
 /* Decoding functions for different classes of instructions */
 int arm_data_processing(arm_core p, uint32_t ins) {
     uint32_t Value_Rn = arm_read_register(p, ins & MASK_RN >> 16);
     uint8_t Rd = ins & MASK_RD >> 12;
     uint32_t Value_Shifter;
     if (ins & MASK_I >> 25) {
-    	Value_Shifter = ror(ins & OxFF, (ins >> 8 & 0xF) * 2);
+    	Value_Shifter = ror(ins & 0xFF, (ins >> 8 & 0xF) * 2);
     } else {
     	Value_Shifter = shifter_operand(p, ins);
     }
 
     uint32_t cpsr = arm_read_cpsr(p);
-    uint8_t n = cpsr & MASK_N >> 31;
-    uint8_t z = cpsr & MASK_Z >> 30;
     uint8_t c = cpsr & MASK_C >> 29;
-    uint8_t v = cpsr & MASK_V >> 28;
     uint64_t Res;
 
-    switch (op_code) { 
+    switch (ins & MASK_OPCODE >> 25) { 
     	case (AND) :
     		arm_write_register(p, Rd, Value_Rn & Value_Shifter);
     		break;
@@ -100,19 +94,17 @@ int arm_data_processing(arm_core p, uint32_t ins) {
     	case (ADD) :
             Res = Value_Rn + Value_Shifter ; 
            	arm_write_register(p,Rd,Res);
-
-           	/*Appel fonction maj CPSR*/
     		break;
     	case (ADC) :
     		Res = Value_Rn + Value_Shifter + c;
     		arm_write_register(p,Rd,Res);
     		break;
     	case (SBC) :
-    		Res = Value_Rn - Value_Shifter - !c;
+    		Res = Value_Rn - Value_Shifter - !(c);
     		arm_write_register(p,Rd,Res);
     		break;
     	case (RSC) :
-    		Res = Value_Shifter - Value_Rn - !c 
+    		Res = Value_Shifter - Value_Rn - !(c); 
     		arm_write_register(p,Rd,Res);
     		break;
     	case (TST) : /*S forcement à 1 ici*/
