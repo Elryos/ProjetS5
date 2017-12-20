@@ -35,7 +35,7 @@ void registers_destroy(registers r) {
 }
 
 uint32_t read_cpsr(registers r) {
-    return r[31];
+    return r[CPSR];
 }
 
 uint8_t get_mode(registers r) {
@@ -96,7 +96,7 @@ void write_usr_register(registers r, uint8_t reg, uint32_t value) {
 }
 
 void write_cpsr(registers r, uint32_t value) {
-	r[31]=value;
+	r[CPSR]=value;
 }
 
 void write_spsr(registers r, uint32_t value) {

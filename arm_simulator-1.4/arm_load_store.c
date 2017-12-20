@@ -28,7 +28,7 @@ Contact: Guillaume.Huard@imag.fr
 #include "util.h"
 #include "debug.h"
 
-#define LS 0b1 <<20
+#define MASK_LS 0b1 <<20
 #define BYTE 0b1 <<22
 #define IMM_REG 0b1 <<22
 #define HALF 0b1001 <<4
@@ -67,7 +67,7 @@ int arm_LDR_STR (arm_core p,uint32_t ins){
 	arm_write_register(p,ins & Rn >>16,address);
 	if(ins & BYTE >>22){
 		uint8_t bvalue;
-		if(ins & LS >>20){
+		if(ins & MASK_LS >>20){
 			if(arm_read_byte(p,address,&bvalue)){
 				arm_write_register(p,ins & Rd >>12,bvalue);
 				return 0;
@@ -81,7 +81,7 @@ int arm_LDR_STR (arm_core p,uint32_t ins){
 	}
 	else{
 		uint32_t value;
-		if (ins & LS >>20){
+		if (ins & MASK_LS >>20){
 			if (arm_read_word(p,address,&value)){
 				arm_write_register(p,ins & Rd >>12,value);
 				return 0;
@@ -115,7 +115,7 @@ int arm_LDRH_STRH (arm_core p,uint32_t ins){
 	}
 	arm_write_register(p,ins & Rn >>16,address);
 	uint16_t value;
-	if (ins & LS >> 20){
+	if (ins & MASK_LS >> 20){
 		if (arm_read_half(p,address,&value)){
 			arm_write_register(p,ins & Rd >>12,value);
 			return 0;

@@ -29,44 +29,24 @@ Contact: Guillaume.Huard@imag.fr
 #include "util.h"
 #include "debug.h"
 
-
-#define MASK_C 0b1 << 29
-
 #define MASK_OPCODE 0b1111 << 25
 #define MASK_I 0b1 << 25
 #define MASK_RN 0b1111 << 16
 #define MASK_RD 0b1111 << 12
 #define MASK_STATUS 0b1 << 20
 
-#define AND 0b0000
-#define EOR 0b0001
-#define SUB 0b0010
-#define RSB 0b0011
-#define ADD 0b0100
-#define ADC 0b0101
-#define SBC 0b0110
-#define RSC 0b0111
-#define TST 0b1000
-#define TEQ 0b1001 
-#define CMP 0b1010 
-#define CMN 0b1011
-#define ORR 0b1100
-#define MOV 0b1101
-#define BIC 0b1110
-#define MVN 0b1111
 
-
-void change_bit(uint32_t * s, uint8_t n, uint32_t val) {
+void change_bit(uint32_t * s, uint8_t n, uint8_t val) {
 	*s = (*s & ~(1 << n)) | (val << n);
 }
 
-void flags_update(arm_core p, uint64_t res) {
+void flags_update(arm_core p, uint64_t res, uint32_t a, uint32_t b) {
 	uint32_t cpsr = arm_read_cpsr(p);
 	
 	change_bit(&cpsr, N, res >> 31 & 1);
 	change_bit(&cpsr, Z, res==0);
 	change_bit(&cpsr, C, res >> 32 & 1);
-	change_bit(&cpsr, V, (res >> 31 & 1) == (res >> 32 & 1));
+	change_bit(&cpsr, V, get_bit(res, 32) != (((get_bit(a, 31) == (get_bit(b, 31))) == get_bit(res, 31))));
 
 	arm_write_cpsr(p, cpsr);
 }
@@ -83,9 +63,8 @@ int arm_data_processing(arm_core p, uint32_t ins) {
     	Value_Shifter = shifter_operand(p, ins);
     }
 
-    uint32_t cpsr = arm_read_cpsr(p);
-    uint8_t c = cpsr & MASK_C >> 29;
-    int64_t Res;
+    uint8_t c = get_bit(arm_read_cpsr(p), C);
+    uint64_t Res;
 
     switch (ins & MASK_OPCODE >> 25) { 
     	case (AND) :
@@ -118,17 +97,16 @@ int arm_data_processing(arm_core p, uint32_t ins) {
     		Res = Value_Shifter - Value_Rn - !(c); 
     		arm_write_register(p,Rd,Res);
     		break;
-    	case (TST) : /*S forcement à 1 ici*/
-    		/*Necessite maj des flags*/
+    	case (TST) :
     		Res = Value_Rn & Value_Shifter;
     		break;
-    	case (TEQ) : /*SAME*/
+    	case (TEQ) :
     		Res = Value_Rn ^ Value_Shifter;
     		break;
-    	case (CMP) : /*SAME*/
+    	case (CMP) :
     		Res = Value_Rn - Value_Shifter;
     		break;
-    	case (CMN) : /*SAME*/
+    	case (CMN) :
     		Res = Value_Rn + Value_Shifter;
     		break;
     	case (ORR) :
@@ -137,7 +115,7 @@ int arm_data_processing(arm_core p, uint32_t ins) {
     		break;
     	case (MOV) :
     		Res = Value_Shifter;
-    		arm_write_register(p,Rd,Value_Shifter);
+    		arm_write_register(p,Rd,Res);
     		break;
     	case (BIC) :
     		Res = Value_Rn & ~(Value_Shifter) ;
@@ -152,7 +130,7 @@ int arm_data_processing(arm_core p, uint32_t ins) {
     }
 
     if (ins & MASK_STATUS >> 20) {
-    	flags_update(p, Res);
+    	flags_update(p, Res, Value_Rn, Value_Shifter);
     }
     return 0;
 }

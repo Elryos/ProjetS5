@@ -24,6 +24,47 @@ Contact: Guillaume.Huard@imag.fr
 #define __ARM_CONSTANTS_H__
 #include <stdint.h>
 
+/* ARM Code Op */
+#define AND 0b0000
+#define EOR 0b0001
+#define SUB 0b0010
+#define RSB 0b0011
+#define ADD 0b0100
+#define ADC 0b0101
+#define SBC 0b0110
+#define RSC 0b0111
+#define TST 0b1000
+#define TEQ 0b1001 
+#define CMP 0b1010 
+#define CMN 0b1011
+#define ORR 0b1100
+#define MOV 0b1101
+#define BIC 0b1110
+#define MVN 0b1111
+
+/* ARM Conditions */
+#define EQ 0b0000	// Equal / equals zero	Z
+#define NE 0b0001	// Not equal	!Z
+#define CS 0b0010   // / HS	Carry set / unsigned higher or same	C
+#define CC 0b0011   // / LO	Carry clear / unsigned lower	!C
+#define MI 0b0100	// Minus / negative	N
+#define PL 0b0101   // Plus / positive or zero	!N
+#define VS 0b0110   // Overflow	V
+#define VC 0b0111   // No overflow	!V
+#define HI 0b1000	// Unsigned higher	C and !Z
+#define LS 0b1001	// Unsigned lower or same	!C or Z
+#define GE 0b1010	// Signed greater than or equal	N == V
+#define LT 0b1011	// Signed less than	N != V
+#define GT 0b1100	// Signed greater than	!Z and (N == V)
+#define LE 0b1101   // Signed less than or equal	Z or (N != V)
+#define AL 0b1110   // Always (default)	any
+
+/* ARM Register */
+#define SP 13
+#define LR 14
+#define PC 15
+#define CPSR 16
+
 /* ARM Modes */
 #define USR 0x10
 #define FIQ 0x11

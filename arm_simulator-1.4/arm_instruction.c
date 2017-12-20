@@ -30,35 +30,18 @@ Contact: Guillaume.Huard@imag.fr
 #include "arm_core.h"
 #include "util.h"
 
-
 #define MASK_RM 0b1111 << 0
 #define MASK_IMMEDIATE 0b1 << 4
 #define MASK_SHIFT 0b11 << 5
 #define MASK_RS_IMMEDIATE 0b11111 << 7
 #define MASK_RS_REGISTER 0b1111 << 8
+
 #define MASK_COND 0b1111 << 28
 #define MASK_N 0b1 << 31
 #define MASK_Z 0b1 << 30
 #define MASK_C 0b1 << 29
 #define MASK_V 0b1 << 28
 #define MASK_TYPE 0b111 << 25
-
-#define EQ 0b0000	// Equal / equals zero	Z
-#define NE 0b0001	// Not equal	!Z
-#define CS 0b0010   // / HS	Carry set / unsigned higher or same	C
-#define CC 0b0011   // / LO	Carry clear / unsigned lower	!C
-#define MI 0b0100	// Minus / negative	N
-#define PL 0b0101   // Plus / positive or zero	!N
-#define VS 0b0110   // Overflow	V
-#define VC 0b0111   // No overflow	!V
-#define HI 0b1000	// Unsigned higher	C and !Z
-#define LS 0b1001	// Unsigned lower or same	!C or Z
-#define GE 0b1010	// Signed greater than or equal	N == V
-#define LT 0b1011	// Signed less than	N != V
-#define GT 0b1100	// Signed greater than	!Z and (N == V)
-#define LE 0b1101   // Signed less than or equal	Z or (N != V)
-#define AL 0b1110   // Always (default)	any
-#define ARM_COPROCESSOR_LOAD_STORE 0b1111
 
 #define DATA_PROCESSING_SHIFT 0b000
 #define DATA_PROCESSING_IMMEDIATE 0b001
@@ -123,11 +106,7 @@ static int arm_execute_instruction(arm_core p) {
     		break;
     	case (AL) :
     		break;
-    	case (ARM_COPROCESSOR_LOAD_STORE) :
-    		arm_miscellaneous(p, ins);
-    		return 0;
     	default : 
-    		return 2;
     		break;
     }
 
@@ -135,11 +114,10 @@ static int arm_execute_instruction(arm_core p) {
     switch (ins & MASK_TYPE >> 25) {
     	case(DATA_PROCESSING_SHIFT) :
     		// CAS PARTICULIER LDRH, STRH
-    		if ((ins >> 4 & 1) && (ins >> 7 & 1)) {
+    		if ((ins >> 4 & 1) && (ins >> 7 & 1))
     			arm_load_store(p,ins);
-    		} else {
+    		else
     			arm_data_processing(p, ins);
-    		}
     		break;
     	case(DATA_PROCESSING_IMMEDIATE)	:
     		arm_data_processing(p, ins);
@@ -157,7 +135,7 @@ static int arm_execute_instruction(arm_core p) {
     		arm_coprocessor_others_swi(p, ins);
     		break;
     	default :
-    		return 3;
+    		return UNDEFINED_INSTRUCTION;
     		break;
     }
     return 0;
