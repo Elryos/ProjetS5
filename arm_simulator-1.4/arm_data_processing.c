@@ -25,6 +25,7 @@ Contact: Guillaume.Huard@imag.fr
 #include "arm_exception.h"
 #include "arm_constants.h"
 #include "arm_branch_other.h"
+#include "arm_instruction.h"
 #include "util.h"
 #include "debug.h"
 
@@ -34,6 +35,10 @@ Contact: Guillaume.Huard@imag.fr
 #define MASK_RS_IMMEDIATE 0b11111 << 7
 #define MASK_RS_REGISTER 0b1111 << 8
 #define MASK_I 0b1 << 25
+#define MASK_N 0b1 << 31
+#define MASK_Z 0b1 << 30
+#define MASK_C 0b1 << 29
+#define MASK_V 0b1 << 28
 
 
 #define MASK_OPCODE 0b1111 << 25
@@ -59,36 +64,6 @@ Contact: Guillaume.Huard@imag.fr
 #define MVN 0b1111
 
 
-
-/*--------------------------SHIFT----------------------------------*/
-
-
-uint32_t shifter_operand(arm_core p, uint32_t ins) { 
-	uint32_t Rm = arm_read_register(p, ins & MASK_RM >> 0);
-	uint32_t Rs;
-
-	if (ins & MASK_IMMEDIATE >> 4) {
-		Rs = ins & MASK_RS_IMMEDIATE >> 7;
-	} else {
-		Rs = arm_read_register(p, ins & MASK_RS_REGISTER >> 8);
-	}
-
-	switch (ins & MASK_SHIFT >> 5) {
-		case (LSL) :
-			return Rm << Rs;
-		case (LSR) :
-			return Rm >> Rs;
-		case (ASR) :
-			return asr(Rm, Rs);          //Comment mettre à jour carry_out ?
-		case (ROR) :
-			return ror(Rm, Rs);
-		default :
-			break;
-	}
-	return 0;
-}
-
-
 /*------------------------------------IMMEDIATE--------------------------------------*/
 
 int immediate_operand(uint32_t ins) {
@@ -100,57 +75,83 @@ int immediate_operand(uint32_t ins) {
 
 /* Decoding functions for different classes of instructions */
 int arm_data_processing(arm_core p, uint32_t ins) {
-    uint32_t Rn = arm_read_register(p, ins & MASK_RN >> 16);
+    uint32_t Value_Rn = arm_read_register(p, ins & MASK_RN >> 16);
     uint8_t Rd = ins & MASK_RD >> 12;
-    uint32_t Rm;
+    uint32_t Value_Shifter;
     if (ins & MASK_I >> 25) {
-    	Rm = immediate_operand(p, ins);
+    	Value_Shifter = immediate_operand(p, ins);
     } else {
-    	Rm = shifter_operand(p, ins);
+    	Value_Shifter = shifter_operand(p, ins);
     }
+
+    uint32_t cpsr = arm_read_cpsr(p);
+    uint8_t n = cpsr & MASK_N >> 31;
+    uint8_t z = cpsr & MASK_Z >> 30;
+    uint8_t c = cpsr & MASK_C >> 29;
+    uint8_t v = cpsr & MASK_V >> 28;
+    uint64_t Res;
+
     switch (op_code) { 
     	case (AND) :
     		arm_write_register(p, Rd, Value_Rn & Value_Shifter);
     		break;
     	case (EOR) :
-    		arm_write_register(p, Rd, Value_Rn | Value_Shifter);
+    		arm_write_register(p, Rd, Value_Rn ^ Value_Shifter); 
     		break;
     	case (SUB) :
-    		uint64_t Res = Value_Rn - Value_Shifter ; 
+    		Res = Value_Rn - Value_Shifter ; 
            	arm_write_register(p,Rd,Res);
     		break;
     	case (RSB) :
-    		uint64_t Res = Value_Shifter - Value_Rn ; 
+    		Res = Value_Shifter - Value_Rn ; 
            	arm_write_register(p,Rd,Res);
     		break;
     	case (ADD) :
-            uint64_t Res = Value_Rn + Value_Shifter ; 
+            Res = Value_Rn + Value_Shifter ; 
            	arm_write_register(p,Rd,Res);
 
            	/*Appel fonction maj CPSR*/
     		break;
     	case (ADC) :
-    		carry_flag
+    		Res = Value_Rn + Value_Shifter + c;
+    		arm_write_register(p,Rd,Res);
     		break;
     	case (SBC) :
+    		Res = Value_Rn - Value_Shifter - !c;
+    		arm_write_register(p,Rd,Res);
     		break;
     	case (RSC) :
+    		Res = Value_Shifter - Value_Rn - !c 
+    		arm_write_register(p,Rd,Res);
     		break;
-    	case (TST) :
+    	case (TST) : /*S forcement à 1 ici*/
+    		/*Necessite maj des flags*/
+    		Res = Value_Rn & Value_Shifter;
     		break;
-    	case (TEQ) :
+    	case (TEQ) : /*SAME*/
+    		Res = Value_Rn ^ Value_Shifter;
     		break;
-    	case (CMP) :
+    	case (CMP) : /*SAME*/
+    		Res = Value_Rn - Value_Shifter;
     		break;
-    	case (CMN) :
+    	case (CMN) : /*SAME*/
+    		Res = Value_Rn + Value_Shifter;
     		break;
     	case (ORR) :
+    		Res = Value_Rn | Value_Shifter;
+    		arm_write_register(p,Rd,Res);
     		break;
     	case (MOV) :
+    		Res = Value_Shifter;
+    		arm_write_register(p,Rd,Value_Shifter);
     		break;
     	case (BIC) :
+    		Res = Value_Rn & ~(Value_Shifter) ;
+    		arm_write_register(p,Rd,Res);
     		break;
     	case (MVN) :
+    		Res = ~(Value_Shifter);
+    		arm_write_register(p,Rd,Res);
     		break;
     	default :
     		break;
