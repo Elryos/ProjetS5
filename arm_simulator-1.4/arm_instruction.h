@@ -24,6 +24,7 @@ Contact: Guillaume.Huard@imag.fr
 #define __ARM_INSTRUCTION_H__
 #include "arm_core.h"
 
+uint32_t shifter_operand(arm_core p, uint32_t ins);
 int arm_step(arm_core p);
 
 #endif

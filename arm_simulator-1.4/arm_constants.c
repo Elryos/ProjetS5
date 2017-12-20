@@ -1,5 +1,5 @@
 /*
-Armator - simulateur de jeu d'instruction ARMv5T à but pédagogique
+Armator - simulateur de jeu d'instruction ARMv5bT à ut pédagogique
 Copyright (C) 2011 Guillaume Huard
 Ce programme est libre, vous pouvez le redistribuer et/ou le modifier selon les
 termes de la Licence Publique Générale GNU publiée par la Free Software
@@ -49,3 +49,4 @@ char *arm_get_mode_name(uint8_t mode) {
 char *arm_get_register_name(uint8_t reg) {
     return arm_register_names[reg];
 }
+

@@ -61,6 +61,7 @@ Contact: Guillaume.Huard@imag.fr
 #define BRANCH 0b101
 #define COPROCESSOR_OTHERS_SWI 0b111
 
+
 static int arm_execute_instruction(arm_core p) {
     uint32_t ins;
     uint32_t cpsr = arm_read_cpsr(p);
@@ -131,11 +132,11 @@ static int arm_execute_instruction(arm_core p) {
     		if ((ins >> 4 & 1) && (ins >> 7 & 1)) {
     			arm_load_store(p,ins);
     		} else {
-    			arm_data_processing_shift(p, ins);
+    			arm_data_processing(p, ins);
     		}
     		break;
     	case(DATA_PROCESSING_IMMEDIATE)	:
-    		arm_data_processing_immediate_msr(p, ins);
+    		arm_data_processing(p, ins);
     		break;
     	case(LOAD_STORE) :
     		arm_load_store(p, ins);
@@ -156,6 +157,7 @@ static int arm_execute_instruction(arm_core p) {
     return 0;
 }
 
+
 int arm_step(arm_core p) {
     int result;
 
@@ -163,4 +165,30 @@ int arm_step(arm_core p) {
     if (result)
         arm_exception(p, result);
     return result;
+}
+
+
+uint32_t shifter_operand(arm_core p, uint32_t ins) {
+    uint32_t Rm = arm_read_register(p, ins & MASK_RM >> 0);
+    uint32_t Rs;
+
+    if (ins & MASK_IMMEDIATE >> 4) {
+        Rs = ins & MASK_RS_IMMEDIATE >> 7;
+    } else {
+        Rs = arm_read_register(p, ins & MASK_RS_REGISTER >> 8);
+    }
+
+    switch (ins & MASK_SHIFT >> 5) {
+        case (LSL) :
+            return Rm << Rs;
+        case (LSR) :
+            return Rm >> Rs;
+        case (ASR) :
+            return asr(Rm, Rs);
+        case (ROR) :
+            return ror(Rm, Rs);
+        default :
+            break;
+    }
+    return 0;
 }
