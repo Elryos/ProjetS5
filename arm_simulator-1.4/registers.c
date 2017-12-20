@@ -20,17 +20,13 @@ Contact: Guillaume.Huard@imag.fr
 	 700 avenue centrale, domaine universitaire
 	 38401 Saint Martin d'H?es
 */
+
 #include "registers.h"
 #include "arm_constants.h"
 #include <stdlib.h>
 
-struct registers_data {
-	uint32_t r[37];
-	uint8_t mode;
-};
-
 registers registers_create() {
-    registers r = malloc(sizeof(r));
+    uint32_t * r = malloc(sizeof(uint32_t[37]));
     return r;
 }
 
@@ -38,74 +34,76 @@ void registers_destroy(registers r) {
 	free(r);
 }
 
+uint32_t read_cpsr(registers r) {
+    return r[31];
+}
+
 uint8_t get_mode(registers r) {
-    return r->mode;
+    return read_cpsr(r) & 0b11111;
 } 
 
 int current_mode_has_spsr(registers r) {
-    return r->mode != USR && r->mode != SYS;
-
+    return get_mode(r) != USR && get_mode(r) != SYS;
 }
 
 int in_a_privileged_mode(registers r) {
-    return r->mode != USR;
+    return get_mode(r) != USR;
 }
 
 int mode_offset(uint8_t mode) {
-	if (USR) return 0;
-	if (SYS) return 0;
-	if (SVC) return 3;
-	if (ABT) return 5;
-	if (UND) return 7;
-	if (IRQ) return 9;
-	if (FIQ) return 16;
-
+	if (mode==USR) return 0;
+	if (mode==SYS) return 0;
+	if (mode==SVC) return 3;
+	if (mode==ABT) return 5;
+	if (mode==UND) return 7;
+	if (mode==IRQ) return 9;
+	if (mode==FIQ) return 16;
+	return 0;
 }
 
 uint32_t read_register(registers r, uint8_t reg) {
-    if (reg == 13 || reg == 14 ||  (8 <= reg && reg <= 12 && r->mode==FIQ)) {
-    	return r->r[reg+mode_offset(r->mode)];
+    if (reg == 13 || reg == 14 ||  (8 <= reg && reg <= 12 && get_mode(r)==FIQ)) {
+    	return r[reg+mode_offset(get_mode(r))];
     } else {
-    	return r->r[reg];
+    	return r[reg];
    	}
 }
 
 uint32_t read_usr_register(registers r, uint8_t reg) {
-    return r->r[reg];
-}
-
-uint32_t read_cpsr(registers r) {
-    return r->r[31];
+    return r[reg];
 }
 
 uint32_t read_spsr(registers r) {
-    if (SVC) return r->r[32];
-	if (ABT) return r->r[33];
-	if (UND) return r->r[34];
-	if (IRQ) return r->r[35];
-	if (FIQ) return r->r[36];
+    uint8_t mode=get_mode(r);
+    if (mode==SVC) return r[32];
+	if (mode==ABT) return r[33];
+	if (mode==UND) return r[34];
+	if (mode==IRQ) return r[35];
+	if (mode==FIQ) return r[36];
+	return 0;
 }
 
 void write_register(registers r, uint8_t reg, uint32_t value) {
-	if (reg == 13 || reg == 14 ||  (8 <= reg && reg <= 12 && r->mode==FIQ)) {
-    	r->r[reg+mode_offset(r->mode)]=value;
+	if (reg == 13 || reg == 14 ||  (8 <= reg && reg <= 12 && get_mode(r)==FIQ)) {
+    	r[reg+mode_offset(get_mode(r))]=value;
     } else {
-    	r->r[reg]=value;
+    	r[reg]=value;
    	}
 }
 
 void write_usr_register(registers r, uint8_t reg, uint32_t value) {
-	r->r[reg]=value;
+	r[reg]=value;
 }
 
 void write_cpsr(registers r, uint32_t value) {
-	r->r[31]=value;
+	r[31]=value;
 }
 
 void write_spsr(registers r, uint32_t value) {
-    if (SVC) r->r[32] = value;
-	if (ABT) r->r[33] = value;
-	if (UND) r->r[34] = value;
-	if (IRQ) r->r[35] = value;
-	if (FIQ) r->r[36] = value;
+    uint8_t mode=get_mode(r);
+    if (mode==SVC) r[32] = value;
+	if (mode==ABT) r[33] = value;
+	if (mode==UND) r[34] = value;
+	if (mode==IRQ) r[35] = value;
+	if (mode==FIQ) r[36] = value;
 }

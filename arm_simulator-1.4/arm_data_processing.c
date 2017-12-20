@@ -30,11 +30,10 @@ Contact: Guillaume.Huard@imag.fr
 #include "debug.h"
 
 
-#define MASK_I 0b1 << 25
 #define MASK_C 0b1 << 29
 
-
 #define MASK_OPCODE 0b1111 << 25
+#define MASK_I 0b1 << 25
 #define MASK_RN 0b1111 << 16
 #define MASK_RD 0b1111 << 12
 #define MASK_STATUS 0b1 << 20
@@ -57,27 +56,27 @@ Contact: Guillaume.Huard@imag.fr
 #define MVN 0b1111
 
 
-uint32_t change_bit(uint32_t s, uint8_t n, uint8_t v) {
-	return (s & ~(1 << n)) | (1 << n);
+void change_bit(uint32_t * s, uint8_t n, uint32_t val) {
+	*s = (*s & ~(1 << n)) | (val << n);
 }
 
 void flags_update(arm_core p, uint64_t res) {
 	uint32_t cpsr = arm_read_cpsr(p);
 	
-	change_bit(cpsr, N, res >> 31 & 1);
-	change_bit(cpsr, Z, res==0);
-	change_bit(cpsr, C, res >> 32 & 1);
-	change_bit(cpsr, V, (res >> 31 & 1) == (res >> 32 & 1));
+	change_bit(&cpsr, N, res >> 31 & 1);
+	change_bit(&cpsr, Z, res==0);
+	change_bit(&cpsr, C, res >> 32 & 1);
+	change_bit(&cpsr, V, (res >> 31 & 1) == (res >> 32 & 1));
 
 	arm_write_cpsr(p, cpsr);
-
 }
 
-/* Decoding functions for different classes of instructions */
+
 int arm_data_processing(arm_core p, uint32_t ins) {
     uint32_t Value_Rn = arm_read_register(p, ins & MASK_RN >> 16);
     uint8_t Rd = ins & MASK_RD >> 12;
     uint32_t Value_Shifter;
+    
     if (ins & MASK_I >> 25) {
     	Value_Shifter = ror(ins & 0xFF, (ins >> 8 & 0xF) * 2);
     } else {
@@ -86,7 +85,7 @@ int arm_data_processing(arm_core p, uint32_t ins) {
 
     uint32_t cpsr = arm_read_cpsr(p);
     uint8_t c = cpsr & MASK_C >> 29;
-    uint64_t Res;
+    int64_t Res;
 
     switch (ins & MASK_OPCODE >> 25) { 
     	case (AND) :
@@ -157,4 +156,3 @@ int arm_data_processing(arm_core p, uint32_t ins) {
     }
     return 0;
 }
-
