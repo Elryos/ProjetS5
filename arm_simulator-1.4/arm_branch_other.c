@@ -31,9 +31,9 @@ Contact: Guillaume.Huard@imag.fr
 
 int arm_branch(arm_core p, uint32_t ins) {
 	if ((MASK_LINK & ins)>>24){
-		arm_write_register(p, 14, ins))
+		arm_write_register(p, 14, ins);
 	}
-	arm_write_register(p, 15, (ins & MASK_TARGET_ADR))
+	arm_write_register(p, 15, (ins & MASK_TARGET_ADR));
     return 1;
 }
 
