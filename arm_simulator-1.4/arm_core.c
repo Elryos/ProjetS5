@@ -20,6 +20,7 @@ Contact: Guillaume.Huard@imag.fr
 	 700 avenue centrale, domaine universitaire
 	 38401 Saint Martin d'Hères
 */
+
 #include "arm_core.h"
 #include "registers.h"
 #include "no_trace_location.h"
@@ -28,6 +29,7 @@ Contact: Guillaume.Huard@imag.fr
 #include "util.h"
 #include "trace.h"
 #include <stdlib.h>
+
 
 struct arm_core_data {
     uint32_t cycle_count;
