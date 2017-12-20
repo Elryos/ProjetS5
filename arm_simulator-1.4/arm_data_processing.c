@@ -64,22 +64,13 @@ Contact: Guillaume.Huard@imag.fr
 #define MVN 0b1111
 
 
-/*------------------------------------IMMEDIATE--------------------------------------*/
-
-int immediate_operand(uint32_t ins) {
-    uint32_t operand = ror(ins & OxFF, (ins >> 8 & 0xF) * 2);
-    return operand;
-}
-
-
-
 /* Decoding functions for different classes of instructions */
 int arm_data_processing(arm_core p, uint32_t ins) {
     uint32_t Value_Rn = arm_read_register(p, ins & MASK_RN >> 16);
     uint8_t Rd = ins & MASK_RD >> 12;
     uint32_t Value_Shifter;
     if (ins & MASK_I >> 25) {
-    	Value_Shifter = immediate_operand(p, ins);
+    	Value_Shifter = ror(ins & OxFF, (ins >> 8 & 0xF) * 2);
     } else {
     	Value_Shifter = shifter_operand(p, ins);
     }
