@@ -63,8 +63,8 @@ Contact: Guillaume.Huard@imag.fr
 //---------------------------INSTRUCTIONS-----------------------------//
 
 int arm_ADD(arm_core p, uint32_t Rd, uint32_t Value_Rn, uint32_t Value_RI) {
-    uint64_t Res = Value_Rn + Value_RI ; 
-    arm_write_register(p,Rd,Res);
+    
+    
     
 }
 
@@ -77,7 +77,7 @@ int arm_ADD(arm_core p, uint32_t Rd, uint32_t Value_Rn, uint32_t Value_RI) {
 
 
 
-//--------------------------SHIFT----------------------------------//
+/*--------------------------SHIFT----------------------------------*/
 
 
 uint32_t shifter_operand(arm_core p, uint32_t ins,int S) { //Rajout int S pour traiter maj de cpsr
@@ -90,7 +90,7 @@ uint32_t shifter_operand(arm_core p, uint32_t ins,int S) { //Rajout int S pour t
 		Rs = arm_read_register(p, ins & MASK_RS_REGISTER >> 8);
 	}
 
-	switch (ins & MASK_SHIFT >> 5) { //Same
+	switch (ins & MASK_SHIFT >> 5) {
 		case (LSL) :
 			return Rm << Rs;
 		case (LSR) :
@@ -106,10 +106,17 @@ uint32_t shifter_operand(arm_core p, uint32_t ins,int S) { //Rajout int S pour t
 }
 
 
+/*------------------------------------IMMEDIATE--------------------------------------*/
+
+int immediate_operand(uint32_t ins) {
+    uint32_t operand = ror(ins & OxFF, (ins >> 8 & 0xF) * 2);
+    return operand;
+}
 
 
 
 
+/*-------------------------------Switch sur les intstructions------------------------------*/
 
 int op_switch(uint8_t op_code, uint32_t Value_Rn, uint32_t Rd, uint32_t Value_Shifter) {
 
@@ -122,11 +129,16 @@ int op_switch(uint8_t op_code, uint32_t Value_Rn, uint32_t Rd, uint32_t Value_Sh
     		arm_write_register(p, Rd, Value_Rn | Value_Shifter);
     		break;
     	case (SUB) :
+    		uint64_t Res = Value_Rn - Value_Shifter ; 
+           	arm_write_register(p,Rd,Res);
     		break;
     	case (RSB) :
     		break;
     	case (ADD) :
-            arm_ADD(p,Rd,Value_Rn,Value_Shifter);
+            uint64_t Res = Value_Rn + Value_Shifter ; 
+           	arm_write_register(p,Rd,Res);
+
+           	/*Appel fonction maj CPSR*/
     		break;
     	case (ADC) :
     		break;
@@ -162,12 +174,6 @@ int op_switch(uint8_t op_code, uint32_t Value_Rn, uint32_t Rd, uint32_t Value_Sh
 
 
 
-//--------------------------IMMEDIATE--------------------------------------//
-
-int immediate_operand(uint32_t ins) {
-    uint32_t operand = ror(ins & OxFF, (ins >> 8 & 0xF) * 2);
-    return operand;
-}
 
 
 
