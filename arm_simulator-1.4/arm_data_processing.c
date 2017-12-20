@@ -33,6 +33,8 @@ Contact: Guillaume.Huard@imag.fr
 #define MASK_SHIFT 0b11 << 5
 #define MASK_RS_IMMEDIATE 0b11111 << 7
 #define MASK_RS_REGISTER 0b1111 << 8
+#define MASK_C_1 0b << 28
+#define MASK_C_0 0b1 << 28
 
 #define MASK_OPCODE 0b1111 << 25
 #define MASK_RN 0b1111 << 16
@@ -57,7 +59,28 @@ Contact: Guillaume.Huard@imag.fr
 #define MVN 0b1111
 
 
-uint32_t shifter_operand(arm_core p, uint32_t ins) {
+
+//---------------------------INSTRUCTIONS-----------------------------//
+
+int arm_ADD(arm_core p, uint32_t Rd, uint32_t Value_Rn, uint32_t Value_RI) {
+    uint64_t Res = Value_Rn + Value_RI ; 
+    arm_write_register(p,Rd,Res);
+    
+}
+
+
+
+
+
+
+
+
+
+
+//--------------------------SHIFT----------------------------------//
+
+
+uint32_t shifter_operand(arm_core p, uint32_t ins,int S) { //Rajout int S pour traiter maj de cpsr
 	uint32_t Rm = arm_read_register(p, ins & MASK_RM >> 0);
 	uint32_t Rs;
 
@@ -67,13 +90,13 @@ uint32_t shifter_operand(arm_core p, uint32_t ins) {
 		Rs = arm_read_register(p, ins & MASK_RS_REGISTER >> 8);
 	}
 
-	switch (ins & MASK_SHIFT >> 5) {
+	switch (ins & MASK_SHIFT >> 5) { //Same
 		case (LSL) :
 			return Rm << Rs;
 		case (LSR) :
 			return Rm >> Rs;
 		case (ASR) :
-			return asr(Rm, Rs);
+			return asr(Rm, Rs);          //Comment mettre à jour carry_out ?
 		case (ROR) :
 			return ror(Rm, Rs);
 		default :
@@ -82,24 +105,28 @@ uint32_t shifter_operand(arm_core p, uint32_t ins) {
 	return 0;
 }
 
-/* Decoding functions for different classes of instructions */
-int arm_data_processing_shift(arm_core p, uint32_t ins) {
-    uint32_t Rn = arm_read_register(p, ins & MASK_RN >> 16);
-    uint8_t Rd = ins & MASK_RD >> 12;
-    uint32_t Rm = shifter_operand(p, ins);
 
-    switch (ins & MASK_OPCODE >> 25) {
+
+
+
+
+
+int op_switch(uint8_t op_code, uint32_t Value_Rn, uint32_t Rd, uint32_t Value_Shifter) {
+
+
+    switch (op_code) { 
     	case (AND) :
-    		arm_write_register(p, Rd, Rn & Rm);
+    		arm_write_register(p, Rd, Value_Rn & Value_Shifter);
     		break;
     	case (EOR) :
-    		arm_write_register(p, Rd, Rn | Rm);
+    		arm_write_register(p, Rd, Value_Rn | Value_Shifter);
     		break;
     	case (SUB) :
     		break;
     	case (RSB) :
     		break;
     	case (ADD) :
+            arm_ADD(p,Rd,Value_Rn,Value_Shifter);
     		break;
     	case (ADC) :
     		break;
@@ -133,6 +160,31 @@ int arm_data_processing_shift(arm_core p, uint32_t ins) {
     return 0;
 }
 
-int arm_data_processing_immediate_msr(arm_core p, uint32_t ins) {
-    return UNDEFINED_INSTRUCTION;
+
+
+//--------------------------IMMEDIATE--------------------------------------//
+
+int immediate_operand(uint32_t ins) {
+    uint32_t operand = ror(ins & OxFF, (ins >> 8 & 0xF) * 2);
+    return operand;
 }
+
+
+
+/* Decoding functions for different classes of instructions */
+int arm_data_processing_shift(arm_core p, uint32_t ins) {
+    uint32_t Rn = arm_read_register(p, ins & MASK_RN >> 16);
+    uint8_t Rd = ins & MASK_RD >> 12;
+    uint32_t Rm = shifter_operand(p, ins);
+
+    op_switch(ins & MASK_OPCODE >> 25, Rn, Rd, Rm) ;
+}
+
+int arm_data_processing_immediate_msr(arm_core p, uint32_t ins) {
+	uint32_t Rn = arm_read_register(p, ins & MASK_RN >> 16);
+	uint8_t Rd = ins & MASK_RD >> 12;
+	uint32_t operand = immediate_operand(p, ins);
+
+    op_switch(ins & MASK_OPCODE >> 25, Rn, Rd, operand)
+}
+
