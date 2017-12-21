@@ -70,8 +70,8 @@ int arm_data_processing(arm_core p, uint32_t ins) {
     uint8_t c = get_bit(arm_read_cpsr(p), C);
     uint64_t Res;
 
-    printf("code op : %i\n", (ins & MASK_OPCODE) >> 25);
-    switch ((ins & MASK_OPCODE) >> 25) { 
+    printf("code op : %i\n", (ins & MASK_OPCODE) >> 21);
+    switch ((ins & MASK_OPCODE) >> 21) { 
     	case (AND) :
             Res = Value_Rn & Value_Shifter;
     		arm_write_register(p, Rd, Value_Rn & Value_Shifter);
