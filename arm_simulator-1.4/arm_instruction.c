@@ -113,7 +113,6 @@ static int arm_execute_instruction(arm_core p) {
     		break;
     }
 
-    printf("%i\n", (ins & MASK_TYPE) >> 25);
     switch ((ins & MASK_TYPE) >> 25) {
     	case(DATA_PROCESSING_SHIFT) :
     		// CAS PARTICULIER LDRH, STRH

@@ -29,7 +29,7 @@ Contact: Guillaume.Huard@imag.fr
 #include "util.h"
 #include "debug.h"
 
-#define MASK_OPCODE 0b1111 << 25
+#define MASK_OPCODE 0b1111 << 21
 #define MASK_I 0b1 << 25
 #define MASK_RN 0b1111 << 16
 #define MASK_RD 0b1111 << 12
@@ -63,15 +63,21 @@ int arm_data_processing(arm_core p, uint32_t ins) {
     } else {
     	Value_Shifter = shifter_operand(p, ins);
     }
+    printf("R%i\n", Rd);
+    printf("Rn=%i\n", Value_Rn);
+    printf("Value_Shifter=%i\n", Value_Shifter);
 
     uint8_t c = get_bit(arm_read_cpsr(p), C);
     uint64_t Res;
 
+    printf("code op : %i\n", (ins & MASK_OPCODE) >> 25);
     switch ((ins & MASK_OPCODE) >> 25) { 
     	case (AND) :
+            Res = Value_Rn & Value_Shifter;
     		arm_write_register(p, Rd, Value_Rn & Value_Shifter);
     		break;
     	case (EOR) :
+            Res = Value_Rn ^ Value_Shifter;
     		arm_write_register(p, Rd, Value_Rn ^ Value_Shifter); 
     		break;
     	case (SUB) :
@@ -130,6 +136,7 @@ int arm_data_processing(arm_core p, uint32_t ins) {
     		break;
     }
 
+    printf("Res=%li\n", Res);
     if ((ins & MASK_STATUS) >> 20) {
     	flags_update(p, Res, Value_Rn, Value_Shifter);
     }

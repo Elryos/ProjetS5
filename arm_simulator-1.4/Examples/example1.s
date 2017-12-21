@@ -2,9 +2,8 @@
 .text
 
 main : 
-	add r5, #2
-	add r3, r5, r5
-	add r5, #3
-	add r3, r5, r3
+	mov r5, #7
+	add r5, r5, r5
+	add r3, r5, #2
 	swi 0x123456
 .data
