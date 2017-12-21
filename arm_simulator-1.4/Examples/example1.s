@@ -40,10 +40,10 @@ main :
 	mvn r5, r1	@r5 = 0xFFFFFFFE
 	mvn r4, r6	@r4 = 0xFFFFFFF9
 
-	
-
-	
-
+	lsl r1, r1, #4  @r1 = 16
+	lsr r1, r1, #3  @r1 = 2
+	mov r4, #-16
+	asr r4, r4, #3  @r4 = -2
 
 	swi 0x123456
 .data
