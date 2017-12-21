@@ -31,7 +31,6 @@ Contact: Guillaume.Huard@imag.fr
 #define MASK_LS 0b1 <<20
 #define BYTE 0b1 <<22
 #define IMM_REG 0b1 <<22
-#define HALF 0b1001 <<4
 #define ADR_MOD 0b11001 <<21
 #define U 0b1 <<23
 #define Rn 0b1111 <<16
@@ -41,6 +40,8 @@ Contact: Guillaume.Huard@imag.fr
 #define IMML 0b1111
 #define Rm 0b1111
 #define P 0b1 <<24
+
+#define MASK_REGLIST 0b1
 
 #define IMM 0b0
 #define REG_SCA 0b1
@@ -105,7 +106,7 @@ int arm_LDRH_STRH (arm_core p,uint32_t ins){
 	uint32_t address;
 	if ((ins & U) >> 23){
 		if((ins & IMM_REG) >> 22){
-			address = arm_read_register(p,(ins & Rn) >> 16) + (((ins & IMMH) >> 4) + (ins & IMML));
+			address = arm_read_register(p,(ins & Rn) >> 16) + (((ins & IMMH) >> 4) | (ins & IMML));
 		}
 		else{
 			address = arm_read_register(p,(ins & Rn) >> 16) + arm_read_register(p,ins & Rm);
@@ -113,7 +114,7 @@ int arm_LDRH_STRH (arm_core p,uint32_t ins){
 	}
 	else{
 		if ((ins & IMM_REG) >> 22){
-			address = arm_read_register(p,(ins & Rn) >> 16) - (((ins & IMMH) >> 4) + (ins & IMML));
+			address = arm_read_register(p,(ins & Rn) >> 16) - (((ins & IMMH) >> 4) | (ins & IMML));
 		}
 		else{
 			address = arm_read_register(p,(ins & Rn) >> 16) - arm_read_register(p,ins & Rm);
@@ -135,7 +136,8 @@ int arm_LDRH_STRH (arm_core p,uint32_t ins){
 
 int arm_load_store(arm_core p, uint32_t ins) {	
 	int res;
-	if ((ins & HALF >> 4) == 0b1001){
+	if ((ins >> 4 & 1) && (ins >> 7 & 1)){
+		printf("LDRH_STRH");
 		res=arm_LDRH_STRH(p,ins);
 	}
 	else{
@@ -145,16 +147,90 @@ int arm_load_store(arm_core p, uint32_t ins) {
 }
 
 int arm_load_store_multiple(arm_core p, uint32_t ins) {
-	/*int res;
-	int start_address;
-	int end_address;
-	if (ins & P >> 24){
+	int address;
+	int i;
+	uint32_t value;
+	if ((ins & P) >> 24){
 		if((ins & U) >> 23){
-			start_address = arm_read_register(p,ins & Rn >> 16) + 4;
-			
+			address = arm_read_register(p,(ins & Rn) >> 16) + 4;
+			for (i = 0;i <= 15;i++){
+				if((ins >> i) & MASK_REGLIST){
+					if((ins & MASK_LS)>>20){
+						if(!arm_read_word(p,address,&value)){
+							arm_write_register(p,i,value);
+						}
+					}
+					else{
+						value = arm_read_register(p,i);
+						arm_write_word(p,address,value);
+					}
+					address=+4;
+				}
+			}
+			address=-4;
 		}
-	}*/
-    return UNDEFINED_INSTRUCTION;
+		else{
+			address = arm_read_register(p,(ins & Rn) >> 16);
+			for (i = 15;i >= 0;i--){
+				if((ins >> i) & MASK_REGLIST){
+					if((ins & MASK_LS)>>20){
+						if(!arm_read_word(p,address,&value)){
+							arm_write_register(p,i,value);
+						}
+					}
+					else{
+						value = arm_read_register(p,i);
+						arm_write_word(p,address,value);
+					}
+					address=+4;
+				}
+			}
+			address=-4;
+		}	
+	}
+
+	else{
+
+		if((ins & U) >> 23){
+			address = arm_read_register(p,(ins & Rn) >> 16);
+			for (i = 0;i <= 15;i++){
+				if((ins >> i) & MASK_REGLIST){
+					if((ins & MASK_LS)>>20){
+						if(!arm_read_word(p,address,&value)){
+							arm_write_register(p,i,value);
+						}
+					}
+					else{
+						value = arm_read_register(p,i);
+						arm_write_word(p,address,value);
+					}
+					address=+4;
+				}
+			}
+			address=-8;
+		}
+		else{
+			address = arm_read_register(p,(ins & Rn) >> 16) + 4;
+			for (i = 15;i >= 0;i--){
+				if((ins >> i) & MASK_REGLIST){
+					if((ins & MASK_LS)>>20){
+						if(!arm_read_word(p,address,&value)){
+							arm_write_register(p,i,value);
+						}
+					}
+					else{
+						value = arm_read_register(p,i);
+						arm_write_word(p,address,value);
+					}
+					address=+4;
+				}
+			}
+			address=-8;
+		}	
+
+	}
+
+    return 0;
 }
 
 int arm_coprocessor_load_store(arm_core p, uint32_t ins) {

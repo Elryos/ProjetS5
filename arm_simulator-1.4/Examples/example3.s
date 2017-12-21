@@ -1,12 +1,13 @@
 .global main
 .text
 main:
-    ldr r0, =limite
-    ldrb r1, [r0]
-    add r0, r0, #3
-    strh r0, [r0]
-    ldrh r2, [r0]
-    swi 0x123456
+    mov r0, #0x12000000
+    mov r1, #0x2000
+    str r0, [r1]
+    ldr r2, [r1]
+    ldrb r0, [r1]
+    ldrh r0, [r1]
+
 .data
 limite:
     .word 0x12345678

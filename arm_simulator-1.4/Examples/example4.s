@@ -6,6 +6,7 @@ main:
 ici:str r0, [r1]
     ldr r2, [r1]
     ldrb r0, [r1]
+    ldrh r0, [r1]
     mov r0, r2
     mov r3, #0x5000
     add r2, r3
