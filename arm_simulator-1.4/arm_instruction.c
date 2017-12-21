@@ -56,10 +56,10 @@ static int arm_execute_instruction(arm_core p) {
     printf("VOILA\n");
     uint32_t ins;
     uint32_t cpsr = arm_read_cpsr(p);
-    uint8_t n = cpsr & MASK_N >> 31;
-    uint8_t z = cpsr & MASK_Z >> 30;
-    uint8_t c = cpsr & MASK_C >> 29;
-    uint8_t v = cpsr & MASK_V >> 28;
+    uint8_t n = (cpsr & MASK_N )>> 31;
+    uint8_t z = (cpsr & MASK_Z )>> 30;
+    uint8_t c = (cpsr & MASK_C )>> 29;
+    uint8_t v = (cpsr & MASK_V )>> 28;
 
     if (arm_fetch(p, &ins)) return 1;
 
@@ -159,16 +159,16 @@ int arm_step(arm_core p) {
 
 
 uint32_t shifter_operand(arm_core p, uint32_t ins) {
-    uint32_t Rm = arm_read_register(p, ins & MASK_RM >> 0);
+    uint32_t Rm = arm_read_register(p, (ins & MASK_RM) >> 0);
     uint32_t Rs;
 
-    if (ins & MASK_IMMEDIATE >> 4) {
-        Rs = ins & MASK_RS_IMMEDIATE >> 7;
+    if ((ins & MASK_IMMEDIATE) >> 4) {
+        Rs = (ins & MASK_RS_IMMEDIATE) >> 7;
     } else {
-        Rs = arm_read_register(p, ins & MASK_RS_REGISTER >> 8);
+        Rs = arm_read_register(p, (ins & MASK_RS_REGISTER) >> 8);
     }
 
-    switch (ins & MASK_SHIFT >> 5) {
+    switch ((ins & MASK_SHIFT) >> 5) {
         case (LSL) :
             return Rm << Rs;
         case (LSR) :

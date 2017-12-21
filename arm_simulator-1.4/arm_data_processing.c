@@ -55,11 +55,11 @@ void flags_update(arm_core p, uint64_t res, uint32_t a, uint32_t b) {
 int arm_data_processing(arm_core p, uint32_t ins) {
     printf("%i", arm_read_register(p, (ins & MASK_RN) >> 16));
     uint32_t Value_Rn = arm_read_register(p, (ins & MASK_RN) >> 16);
-    uint8_t Rd = ins & MASK_RD >> 12;
+    uint8_t Rd = (ins & MASK_RD) >> 12;
     uint32_t Value_Shifter;
     
-    if (ins & MASK_I >> 25) {
-    	Value_Shifter = ror(ins & 0xFF, (ins >> 8 & 0xF) * 2);
+    if ((ins & MASK_I) >> 25) {
+    	Value_Shifter = ror(ins & 0xFF, ((ins >> 8) & 0xF) * 2);
     } else {
     	Value_Shifter = shifter_operand(p, ins);
     }
