@@ -53,7 +53,6 @@ Contact: Guillaume.Huard@imag.fr
 
 static int arm_execute_instruction(arm_core p) {
     
-    printf("VOILA\n");
     uint32_t ins;
     uint32_t cpsr = arm_read_cpsr(p);
     uint8_t n = (cpsr & MASK_N )>> 31;
@@ -129,6 +128,7 @@ static int arm_execute_instruction(arm_core p) {
     		arm_data_processing(p, ins);
     		break;
     	case(LOAD_STORE) :
+            printf("LOAD_STORE\n");
     		arm_load_store(p, ins);
     		break;
     	case(LOAD_STORE_MULTIPLE) : 

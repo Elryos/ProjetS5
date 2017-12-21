@@ -49,48 +49,51 @@ Contact: Guillaume.Huard@imag.fr
 int arm_LDR_STR (arm_core p,uint32_t ins){
 	uint32_t address;
 
-	if (ins & U >> 23){
-		if((ins & ADR_MOD >> 25) == IMM){
-			address = arm_read_register(p,ins & Rn >>16) + (ins & offset_12);
+	if ((ins & U) >> 23){
+		if(((ins & ADR_MOD) >> 25) == IMM){
+			address = arm_read_register(p,(ins & Rn) >>16) + (ins & offset_12);
 		}
 		else{
-			address = arm_read_register(p,ins & Rn >> 16) + shifter_operand(p,ins);
+			address = arm_read_register(p,(ins & Rn) >> 16) + shifter_operand(p,ins);
 		}
 	}
 	else{
-		if((ins & ADR_MOD >> 25) == IMM){
-			address = arm_read_register(p,ins & Rn >>16) - (ins & offset_12);
+		if(((ins & ADR_MOD) >> 25) == IMM){
+			address = arm_read_register(p,(ins & Rn) >>16) - (ins & offset_12);
 		}
 		else{
-			address = arm_read_register(p,ins & Rn >> 16) - shifter_operand(p,ins);
+			address = arm_read_register(p,(ins & Rn) >> 16) - shifter_operand(p,ins);
 		}
 	}
-	arm_write_register(p,ins & Rn >>16,address);
-	if(ins & BYTE >>22){
+	printf("address %u \n", address);
+	if((ins & BYTE) >>22){
 		uint8_t bvalue;
-		if(ins & MASK_LS >>20){
+		if((ins & MASK_LS) >>20){
 			if(arm_read_byte(p,address,&bvalue)){
-				arm_write_register(p,ins & Rd >>12,bvalue);
+				printf("valeur %u \n", bvalue);
+				arm_write_register(p,(ins & Rd) >>12,bvalue);
 				return 0;
 			}
 			return 1;
 		}
 		else{
-			bvalue=arm_read_register(p,ins & Rd >>12);
+			printf("%u \n", arm_read_register(p,(ins & Rd) >>12));
+			bvalue=arm_read_register(p,(ins & Rd) >>12);
+			printf("valeur %u \n", bvalue);
 			return arm_write_byte(p,address,bvalue);
 		}
 	}
 	else{
 		uint32_t value;
-		if (ins & MASK_LS >>20){
+		if ((ins & MASK_LS) >>20){
 			if (arm_read_word(p,address,&value)){
-				arm_write_register(p,ins & Rd >>12,value);
+				arm_write_register(p,(ins & Rd) >>12,value);
 				return 0;
 			}
 			return 1;
 		}
 		else{
-			value = arm_read_register(p,ins & Rd >>12);
+			value = arm_read_register(p,(ins & Rd) >>12);
 			return arm_write_word(p,address,value);
 		}
 	}		
@@ -98,33 +101,32 @@ int arm_LDR_STR (arm_core p,uint32_t ins){
 
 int arm_LDRH_STRH (arm_core p,uint32_t ins){
 	uint32_t address;
-	if (ins & U >> 23){
-		if(ins & IMM_REG >> 22){
-			address = arm_read_register(p,ins & Rn >> 16) + (ins & IMMH >> 4) + (ins & IMML);
+	if ((ins & U) >> 23){
+		if((ins & IMM_REG) >> 22){
+			address = arm_read_register(p,(ins & Rn) >> 16) + (((ins & IMMH) >> 4) + (ins & IMML));
 		}
 		else{
-			address = arm_read_register(p,ins & Rn >> 16) + arm_read_register(p,ins & Rm);
+			address = arm_read_register(p,(ins & Rn) >> 16) + arm_read_register(p,ins & Rm);
 		}
 	}
 	else{
-		if (ins & IMM_REG >> 22){
-			address = arm_read_register(p,ins & Rn >> 16) - (ins & IMMH >> 4) + (ins & IMML);
+		if ((ins & IMM_REG) >> 22){
+			address = arm_read_register(p,(ins & Rn) >> 16) - (((ins & IMMH) >> 4) + (ins & IMML));
 		}
 		else{
-			address = arm_read_register(p,ins & Rn >> 16) - arm_read_register(p,ins & Rm);
+			address = arm_read_register(p,(ins & Rn) >> 16) - arm_read_register(p,ins & Rm);
 		}
 	}
-	arm_write_register(p,ins & Rn >>16,address);
 	uint16_t value;
-	if (ins & MASK_LS >> 20){
+	if ((ins & MASK_LS) >> 20){
 		if (arm_read_half(p,address,&value)){
-			arm_write_register(p,ins & Rd >>12,value);
+			arm_write_register(p,(ins & Rd) >>12,value);
 			return 0;
 		}
 		return 1;
 	}
 	else {
-		value = arm_read_register(p,ins & Rd >>12);
+		value = arm_read_register(p,(ins & Rd) >>12);
 		return arm_write_half(p,address,value);
 	}
 }
@@ -145,7 +147,7 @@ int arm_load_store_multiple(arm_core p, uint32_t ins) {
 	int start_address;
 	int end_address;
 	if (ins & P >> 24){
-		if(ins & U >> 23){
+		if((ins & U) >> 23){
 			start_address = arm_read_register(p,ins & Rn >> 16) + 4;
 			
 		}

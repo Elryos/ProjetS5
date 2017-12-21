@@ -75,7 +75,7 @@ int arm_data_processing(arm_core p, uint32_t ins) {
     		arm_write_register(p, Rd, Value_Rn ^ Value_Shifter); 
     		break;
     	case (SUB) :
-    		Res = Value_Rn - Value_Shifter ; 
+    		Res = Value_Rn - Value_Shifter ;  
            	arm_write_register(p,Rd,Res);
     		break;
     	case (RSB) :
