@@ -112,7 +112,7 @@ static int arm_execute_instruction(arm_core p) {
     	default : 
     		break;
     }
-
+    printf("%i =? %i",(ins & MASK_TYPE) >> 25, BRANCH);
     switch ((ins & MASK_TYPE) >> 25) {
     	case(DATA_PROCESSING_SHIFT) :
     		// CAS PARTICULIER LDRH, STRH
@@ -134,6 +134,7 @@ static int arm_execute_instruction(arm_core p) {
     		arm_load_store_multiple(p, ins);
     		break;
     	case(BRANCH) :
+            printf("branch\n");
     		arm_branch(p, ins);
     		break;
     	case(COPROCESSOR_OTHERS_SWI) :

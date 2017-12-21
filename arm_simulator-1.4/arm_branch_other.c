@@ -35,11 +35,11 @@ int32_t sign_extending(uint32_t x) {
 }
 
 int arm_branch(arm_core p, uint32_t ins) {
-
-	if (ins & MASK_L)
-		arm_write_register(p, 14, arm_read_register(p, 15)+4);
-	arm_write_register(p, 15, arm_read_register(p,15) + (sign_extending(ins & MASK_TARGET_ADR) << 2));
-
+    printf("arm_branch\n");
+    printf("%i",ins & MASK_TARGET_ADR);
+    if (ins & MASK_L)
+        arm_write_register(p, 14, arm_read_register(p, 15)+4);
+    arm_write_register(p, 15, arm_read_register(p,15) + (sign_extending(ins & MASK_TARGET_ADR) << 2));
     return 0;
 }
 
