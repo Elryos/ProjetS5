@@ -40,6 +40,7 @@ Contact: Guillaume.Huard@imag.fr
 #define IMMH 0b1111 <<8
 #define IMML 0b1111
 #define Rm 0b1111
+#define P 0b1 <<24
 
 #define IMM 0b0
 #define REG_SCA 0b1
@@ -50,18 +51,18 @@ int arm_LDR_STR (arm_core p,uint32_t ins){
 
 	if (ins & U >> 23){
 		if((ins & ADR_MOD >> 25) == IMM){
-			address = arm_read_register(p,ins & Rn >>20) + (ins & offset_12);
+			address = arm_read_register(p,ins & Rn >>16) + (ins & offset_12);
 		}
 		else{
-			address = arm_read_register(p,ins & Rn >> 20) + shifter_operand(p,ins);
+			address = arm_read_register(p,ins & Rn >> 16) + shifter_operand(p,ins);
 		}
 	}
 	else{
 		if((ins & ADR_MOD >> 25) == IMM){
-			address = arm_read_register(p,ins & Rn >>20) - (ins & offset_12);
+			address = arm_read_register(p,ins & Rn >>16) - (ins & offset_12);
 		}
 		else{
-			address = arm_read_register(p,ins & Rn >> 20) - shifter_operand(p,ins);
+			address = arm_read_register(p,ins & Rn >> 16) - shifter_operand(p,ins);
 		}
 	}
 	arm_write_register(p,ins & Rn >>16,address);
@@ -99,18 +100,18 @@ int arm_LDRH_STRH (arm_core p,uint32_t ins){
 	uint32_t address;
 	if (ins & U >> 23){
 		if(ins & IMM_REG >> 22){
-			address = arm_read_register(p,ins & Rn >> 20) + (ins & IMMH >> 4) + (ins & IMML);
+			address = arm_read_register(p,ins & Rn >> 16) + (ins & IMMH >> 4) + (ins & IMML);
 		}
 		else{
-			address = arm_read_register(p,ins & Rn >> 20) + arm_read_register(p,ins & Rm);
+			address = arm_read_register(p,ins & Rn >> 16) + arm_read_register(p,ins & Rm);
 		}
 	}
 	else{
 		if (ins & IMM_REG >> 22){
-			address = arm_read_register(p,ins & Rn >> 20) - (ins & IMMH >> 4) + (ins & IMML);
+			address = arm_read_register(p,ins & Rn >> 16) - (ins & IMMH >> 4) + (ins & IMML);
 		}
 		else{
-			address = arm_read_register(p,ins & Rn >> 20) - arm_read_register(p,ins & Rm);
+			address = arm_read_register(p,ins & Rn >> 16) - arm_read_register(p,ins & Rm);
 		}
 	}
 	arm_write_register(p,ins & Rn >>16,address);
@@ -140,7 +141,15 @@ int arm_load_store(arm_core p, uint32_t ins) {
 }
 
 int arm_load_store_multiple(arm_core p, uint32_t ins) {
-
+	/*int res;
+	int start_address;
+	int end_address;
+	if (ins & P >> 24){
+		if(ins & U >> 23){
+			start_address = arm_read_register(p,ins & Rn >> 16) + 4;
+			
+		}
+	}*/
     return UNDEFINED_INSTRUCTION;
 }
 

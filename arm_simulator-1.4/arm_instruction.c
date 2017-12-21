@@ -52,6 +52,8 @@ Contact: Guillaume.Huard@imag.fr
 
 
 static int arm_execute_instruction(arm_core p) {
+    
+    printf("VOILA\n");
     uint32_t ins;
     uint32_t cpsr = arm_read_cpsr(p);
     uint8_t n = cpsr & MASK_N >> 31;
@@ -60,8 +62,10 @@ static int arm_execute_instruction(arm_core p) {
     uint8_t v = cpsr & MASK_V >> 28;
 
     if (arm_fetch(p, &ins)) return 1;
-    
-    switch (ins & MASK_COND >> 28) {
+
+    printf("%i", (ins & MASK_COND) >> 28);
+
+    switch ((ins & MASK_COND) >> 28) {
     	case (EQ) :
     		if (!z) return 0;
     		break;
@@ -110,14 +114,16 @@ static int arm_execute_instruction(arm_core p) {
     		break;
     }
 
-
-    switch (ins & MASK_TYPE >> 25) {
+    printf("%i\n", (ins & MASK_TYPE) >> 25);
+    switch ((ins & MASK_TYPE) >> 25) {
     	case(DATA_PROCESSING_SHIFT) :
     		// CAS PARTICULIER LDRH, STRH
-    		if ((ins >> 4 & 1) && (ins >> 7 & 1))
+    		if ((ins >> 4 & 1) && (ins >> 7 & 1)) {
     			arm_load_store(p,ins);
-    		else
-    			arm_data_processing(p, ins);
+            } else {
+                printf("DATA PROC\n");
+                arm_data_processing(p, ins);
+            }
     		break;
     	case(DATA_PROCESSING_IMMEDIATE)	:
     		arm_data_processing(p, ins);

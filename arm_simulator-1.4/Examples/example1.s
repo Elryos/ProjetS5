@@ -1,14 +1,10 @@
 .global main
 .text
-decr:
-    subs r0, r0, #1
-    mov pc, lr
 
-main:
-    mov r0, #5
-loop:
-    bl decr
-    bne loop
-end:
-    swi 0x123456
+main : 
+	add r5, #2
+	add r3, r5, r5
+	add r5, #3
+	add r3, r5, r3
+	swi 0x123456
 .data

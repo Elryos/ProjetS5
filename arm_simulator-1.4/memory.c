@@ -28,18 +28,21 @@ Contact: Guillaume.Huard@imag.fr
 
 struct memory_data {
     uint8_t * m;
+    size_t size;
     int is_big_endian;
 };
 
 memory memory_create(size_t size, int is_big_endian) {
     memory mem = malloc(sizeof(mem));
     mem->m = malloc(size);
+    mem->size = size;
     mem->is_big_endian = is_big_endian;
     return mem;
 }
 
 size_t memory_get_size(memory mem) {
-    return sizeof(mem->m)/sizeof(mem->m[0]);
+    // return sizeof(mem->m)/sizeof(mem->m[0]);
+    return mem->size;
 }
 
 void memory_destroy(memory mem) {
@@ -52,14 +55,14 @@ int is_not_valid_address(memory mem, uint32_t address) {
 }
 
 int memory_read_byte(memory mem, uint32_t address, uint8_t *value) {
-    if (is_not_valid_address(mem,address)) return DATA_ABORT;
+    //if (is_not_valid_address(mem,address)) return DATA_ABORT;
 
     *value = mem->m[address];
     return 0;
 }
 
 int memory_read_half(memory mem, uint32_t address, uint16_t *value) {
-    if (is_not_valid_address(mem,address)) return DATA_ABORT;
+    //if (is_not_valid_address(mem,address)) return DATA_ABORT;
 
     if (mem->is_big_endian) {
          *value = mem->m[address] << 8 | mem->m[address+1];
@@ -70,7 +73,7 @@ int memory_read_half(memory mem, uint32_t address, uint16_t *value) {
 }
 
 int memory_read_word(memory mem, uint32_t address, uint32_t *value) {
-    if (is_not_valid_address(mem,address)) return DATA_ABORT;
+    // if (is_not_valid_address(mem,address)) return DATA_ABORT;
 
     if (mem->is_big_endian) {
         *value = mem->m[address] << 24 | mem->m[address+1] << 16 | mem->m[address+2] << 8 | mem->m[address+3];
@@ -81,15 +84,15 @@ int memory_read_word(memory mem, uint32_t address, uint32_t *value) {
 }
 
 int memory_write_byte(memory mem, uint32_t address, uint8_t value) {
-    if (is_not_valid_address(mem,address)) return DATA_ABORT;
+    // if (is_not_valid_address(mem,address)) return DATA_ABORT;
     
     mem->m[address]=value;
     return 0;
 }
 
 int memory_write_half(memory mem, uint32_t address, uint16_t value) {
-    if (is_not_valid_address(mem,address)) return DATA_ABORT;
-    if (address%2) return DATA_ABORT;
+    // if (is_not_valid_address(mem,address)) return DATA_ABORT;
+    // if (address%2) return DATA_ABORT;
 
     if (mem->is_big_endian) {
         mem->m[address] = value >> 8;
@@ -102,8 +105,8 @@ int memory_write_half(memory mem, uint32_t address, uint16_t value) {
 }
 
 int memory_write_word(memory mem, uint32_t address, uint32_t value) {
-    if (is_not_valid_address(mem,address)) return DATA_ABORT;
-    if (address%4) return DATA_ABORT;
+    // if (is_not_valid_address(mem,address)) return DATA_ABORT;
+    // if (address%4) return DATA_ABORT;
 
     if (mem->is_big_endian) {
         mem->m[address] = value >> 24;

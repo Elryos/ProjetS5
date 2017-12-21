@@ -53,7 +53,8 @@ void flags_update(arm_core p, uint64_t res, uint32_t a, uint32_t b) {
 
 
 int arm_data_processing(arm_core p, uint32_t ins) {
-    uint32_t Value_Rn = arm_read_register(p, ins & MASK_RN >> 16);
+    printf("%i", arm_read_register(p, (ins & MASK_RN) >> 16));
+    uint32_t Value_Rn = arm_read_register(p, (ins & MASK_RN) >> 16);
     uint8_t Rd = ins & MASK_RD >> 12;
     uint32_t Value_Shifter;
     
@@ -66,7 +67,7 @@ int arm_data_processing(arm_core p, uint32_t ins) {
     uint8_t c = get_bit(arm_read_cpsr(p), C);
     uint64_t Res;
 
-    switch (ins & MASK_OPCODE >> 25) { 
+    switch ((ins & MASK_OPCODE) >> 25) { 
     	case (AND) :
     		arm_write_register(p, Rd, Value_Rn & Value_Shifter);
     		break;
@@ -129,7 +130,7 @@ int arm_data_processing(arm_core p, uint32_t ins) {
     		break;
     }
 
-    if (ins & MASK_STATUS >> 20) {
+    if ((ins & MASK_STATUS) >> 20) {
     	flags_update(p, Res, Value_Rn, Value_Shifter);
     }
     return 0;
