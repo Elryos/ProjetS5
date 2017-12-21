@@ -29,7 +29,7 @@ Contact: Guillaume.Huard@imag.fr
 #include "util.h"
 #include "debug.h"
 
-#define MASK_OPCODE 0b1111 << 21
+#define MASK_OPCODE 0b1111 << 21    
 #define MASK_I 0b1 << 25
 #define MASK_RN 0b1111 << 16
 #define MASK_RD 0b1111 << 12
