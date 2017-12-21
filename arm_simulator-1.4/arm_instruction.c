@@ -31,7 +31,7 @@ Contact: Guillaume.Huard@imag.fr
 #include "util.h"
 
 #define MASK_RM 0b1111 << 0
-#define MASK_IMMEDIATE 0b1 << 4
+#define MASK_BY_REGISTER 0b1 << 4
 #define MASK_SHIFT 0b11 << 5
 #define MASK_RS_IMMEDIATE 0b11111 << 7
 #define MASK_RS_REGISTER 0b1111 << 8
@@ -61,8 +61,6 @@ static int arm_execute_instruction(arm_core p) {
     uint8_t v = (cpsr & MASK_V )>> 28;
 
     if (arm_fetch(p, &ins)) return 1;
-
-    printf("%i", (ins & MASK_COND) >> 28);
 
     switch ((ins & MASK_COND) >> 28) {
     	case (EQ) :
@@ -112,14 +110,12 @@ static int arm_execute_instruction(arm_core p) {
     	default : 
     		break;
     }
-    printf("%i =? %i",(ins & MASK_TYPE) >> 25, BRANCH);
     switch ((ins & MASK_TYPE) >> 25) {
     	case(DATA_PROCESSING_SHIFT) :
     		// CAS PARTICULIER LDRH, STRH
     		if ((ins >> 4 & 1) && (ins >> 7 & 1)) {
     			arm_load_store(p,ins);
             } else {
-                printf("DATA PROC\n");
                 arm_data_processing(p, ins);
             }
     		break;
@@ -127,14 +123,12 @@ static int arm_execute_instruction(arm_core p) {
     		arm_data_processing(p, ins);
     		break;
     	case(LOAD_STORE) :
-            printf("LOAD_STORE\n");
     		arm_load_store(p, ins);
     		break;
     	case(LOAD_STORE_MULTIPLE) : 
     		arm_load_store_multiple(p, ins);
     		break;
     	case(BRANCH) :
-            printf("branch\n");
     		arm_branch(p, ins);
     		break;
     	case(COPROCESSOR_OTHERS_SWI) :
@@ -162,10 +156,10 @@ uint32_t shifter_operand(arm_core p, uint32_t ins) {
     uint32_t Rm = arm_read_register(p, (ins & MASK_RM) >> 0);
     uint32_t Rs;
 
-    if ((ins & MASK_IMMEDIATE) >> 4) {
-        Rs = (ins & MASK_RS_IMMEDIATE) >> 7;
-    } else {
+    if ((ins & MASK_BY_REGISTER) >> 4) {
         Rs = arm_read_register(p, (ins & MASK_RS_REGISTER) >> 8);
+    } else {
+        Rs = (ins & MASK_RS_IMMEDIATE) >> 7;
     }
 
     switch ((ins & MASK_SHIFT) >> 5) {

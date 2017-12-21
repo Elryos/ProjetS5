@@ -35,6 +35,61 @@ Contact: Guillaume.Huard@imag.fr
 #define MASK_RD 0b1111 << 12
 #define MASK_STATUS 0b1 << 20
 
+void test(uint8_t code) {
+    switch (code) { 
+        case (AND) :
+            printf(" ADD ");
+            break;
+        case (EOR) :
+            printf(" EOR ");
+            break;
+        case (SUB) :
+            printf(" SUB ");         
+            break;
+        case (RSB) :
+            printf(" RSB ");           
+            break;
+        case (ADD) :
+            printf(" ADD ");           
+            break;
+        case (ADC) :
+            printf(" ADC ");          
+            break;
+        case (SBC) :
+            printf(" SBC ");          
+            break;
+        case (RSC) :
+            printf(" RSC ");          
+            break;
+        case (TST) :
+            printf(" TST ");         
+            break;
+        case (TEQ) :
+            printf(" TEQ ");          
+            break;
+        case (CMP) :
+            printf(" CMP ");          
+            break;
+        case (CMN) :
+            printf(" CMN ");         
+            break;
+        case (ORR) :
+            printf(" ORR ");          
+            break;
+        case (MOV) :
+            printf(" MOV ");            
+            break;
+        case (BIC) :
+            printf(" BIC ");            
+            break;
+        case (MVN) :
+            printf(" MVN ");
+            break;
+        default :
+            printf("%i", code);
+            break;
+    }
+}
 
 void change_bit(uint32_t * s, uint8_t n, uint8_t val) {
 	*s = (*s & ~(1 << n)) | (val << n);
@@ -53,7 +108,6 @@ void flags_update(arm_core p, uint64_t res, uint32_t a, uint32_t b) {
 
 
 int arm_data_processing(arm_core p, uint32_t ins) {
-    printf("%i", arm_read_register(p, (ins & MASK_RN) >> 16));
     uint32_t Value_Rn = arm_read_register(p, (ins & MASK_RN) >> 16);
     uint8_t Rd = (ins & MASK_RD) >> 12;
     uint32_t Value_Shifter;
@@ -63,14 +117,10 @@ int arm_data_processing(arm_core p, uint32_t ins) {
     } else {
     	Value_Shifter = shifter_operand(p, ins);
     }
-    printf("R%i\n", Rd);
-    printf("Rn=%i\n", Value_Rn);
-    printf("Value_Shifter=%i\n", Value_Shifter);
-
+    
     uint8_t c = get_bit(arm_read_cpsr(p), C);
     uint64_t Res;
 
-    printf("code op : %i\n", (ins & MASK_OPCODE) >> 21);
     switch ((ins & MASK_OPCODE) >> 21) { 
     	case (AND) :
             Res = Value_Rn & Value_Shifter;
@@ -136,9 +186,13 @@ int arm_data_processing(arm_core p, uint32_t ins) {
     		break;
     }
 
-    printf("Res=%li\n", Res);
+    printf(" r%i <- (%i", Rd, Value_Rn);
+    test((ins & MASK_OPCODE) >> 21);
+    printf("%i) = %li\n", Value_Shifter, Res);
+
     if ((ins & MASK_STATUS) >> 20) {
     	flags_update(p, Res, Value_Rn, Value_Shifter);
     }
     return 0;
 }
+

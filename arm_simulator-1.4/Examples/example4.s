@@ -1,14 +1,6 @@
 .global main
 .text
 main:
-<<<<<<< HEAD
-	mov r0, #0
-	mov r1, #1
-	mov r2, r1
-	add r1, r1
-	bl 0x24
-    swi 0x123456
-=======
     mov r0, #0x12000000
     mov r1, #0x2000
 ici:str r0, [r1]
@@ -25,4 +17,3 @@ donnee:
     .word 0x11223344
     .word 0x55667788
 fin:
->>>>>>> 7bdae88734079149f4d90e914a0fbc7f03b43291
