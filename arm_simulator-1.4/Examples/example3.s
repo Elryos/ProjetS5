@@ -4,8 +4,8 @@ main:
     ldr r0, =limite
     ldrb r1, [r0]
     add r0, r0, #3
-    strb r0, [r0]
-    ldrb r2, [r0]
+    strh r0, [r0]
+    ldrh r2, [r0]
     swi 0x123456
 .data
 limite:

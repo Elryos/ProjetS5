@@ -65,28 +65,29 @@ int arm_LDR_STR (arm_core p,uint32_t ins){
 			address = arm_read_register(p,(ins & Rn) >> 16) - shifter_operand(p,ins);
 		}
 	}
-	printf("address %u \n", address);
+	//printf("address %u \n", address);
 	if((ins & BYTE) >>22){
 		uint8_t bvalue;
 		if((ins & MASK_LS) >>20){
-			if(arm_read_byte(p,address,&bvalue)){
-				printf("valeur %u \n", bvalue);
+			if(!arm_read_byte(p,address,&bvalue)){
+				//printf("valeur b load %u \n", bvalue);
 				arm_write_register(p,(ins & Rd) >>12,bvalue);
 				return 0;
 			}
 			return 1;
 		}
 		else{
-			printf("%u \n", arm_read_register(p,(ins & Rd) >>12));
+			//printf("%u \n", arm_read_register(p,(ins & Rd) >>12));
 			bvalue=arm_read_register(p,(ins & Rd) >>12);
-			printf("valeur %u \n", bvalue);
+			//printf("valeur b store %u \n", bvalue);
 			return arm_write_byte(p,address,bvalue);
 		}
 	}
 	else{
 		uint32_t value;
 		if ((ins & MASK_LS) >>20){
-			if (arm_read_word(p,address,&value)){
+			if (!arm_read_word(p,address,&value)){
+				//printf("valeur load %u \n", value);
 				arm_write_register(p,(ins & Rd) >>12,value);
 				return 0;
 			}
@@ -94,6 +95,7 @@ int arm_LDR_STR (arm_core p,uint32_t ins){
 		}
 		else{
 			value = arm_read_register(p,(ins & Rd) >>12);
+			//printf("valeur store %u \n", value);
 			return arm_write_word(p,address,value);
 		}
 	}		
@@ -119,7 +121,7 @@ int arm_LDRH_STRH (arm_core p,uint32_t ins){
 	}
 	uint16_t value;
 	if ((ins & MASK_LS) >> 20){
-		if (arm_read_half(p,address,&value)){
+		if (!arm_read_half(p,address,&value)){
 			arm_write_register(p,(ins & Rd) >>12,value);
 			return 0;
 		}
