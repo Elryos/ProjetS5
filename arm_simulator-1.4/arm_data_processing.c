@@ -29,13 +29,13 @@ Contact: Guillaume.Huard@imag.fr
 #include "util.h"
 #include "debug.h"
 
-#define MASK_OPCODE 0b1111 << 21    
+#define MASK_OPCODE 0b1111 << 21
 #define MASK_I 0b1 << 25
 #define MASK_RN 0b1111 << 16
 #define MASK_RD 0b1111 << 12
 #define MASK_STATUS 0b1 << 20
 
-void test(uint8_t code) {
+void print_codeop(uint8_t code) {
     switch (code) { 
         case (AND) :
             printf(" ADD ");
@@ -77,18 +77,27 @@ void test(uint8_t code) {
             printf(" ORR ");          
             break;
         case (MOV) :
-            printf(" MOV ");            
+            printf(" x MOV ");            
             break;
         case (BIC) :
             printf(" BIC ");            
             break;
         case (MVN) :
-            printf(" MVN ");
+            printf(" x MVN ");
             break;
         default :
             printf("%i", code);
             break;
     }
+}
+
+void print_flags(arm_core p) {
+	uint32_t cpsr = arm_read_cpsr(p);
+	uint8_t n = cpsr >> N & 1;
+    uint8_t z = cpsr >> Z & 1;
+    uint8_t c = cpsr >> C & 1;
+    uint8_t v = cpsr >> V & 1;
+	printf("N=%i ; Z=%i; C=%i, V=%i\n", n,z,c,v);
 }
 
 void change_bit(uint32_t * s, uint8_t n, uint8_t val) {
@@ -98,19 +107,21 @@ void change_bit(uint32_t * s, uint8_t n, uint8_t val) {
 void flags_update(arm_core p, uint64_t res, uint32_t a, uint32_t b) {
 	uint32_t cpsr = arm_read_cpsr(p);
 	
-	change_bit(&cpsr, N, res >> 31 & 1);
+	change_bit(&cpsr, N, get_bit(res, 31));
 	change_bit(&cpsr, Z, res==0);
-	change_bit(&cpsr, C, res >> 32 & 1);
-	change_bit(&cpsr, V, get_bit(a, 31) == get_bit(b, 31) && get_bit(b, 31) != get_bit(res, 31));
+	change_bit(&cpsr, C, get_bit(res, 32));
+	change_bit(&cpsr, V, (get_bit(a, 31) == get_bit(b, 31)) && (get_bit(b, 31) != get_bit(res, 31)));
 
+	printf("%lu %u\n", res, (int32_t) res);
 	arm_write_cpsr(p, cpsr);
 }
 
 
 int arm_data_processing(arm_core p, uint32_t ins) {
-    uint32_t Value_Rn = arm_read_register(p, (ins & MASK_RN) >> 16);
+    uint64_t Value_Rn = arm_read_register(p, (ins & MASK_RN) >> 16);
     uint8_t Rd = (ins & MASK_RD) >> 12;
-    uint32_t Value_Shifter;
+    uint64_t Value_Shifter;
+    uint64_t Res;
     
     if ((ins & MASK_I) >> 25) {
     	Value_Shifter = ror(ins & 0xFF, ((ins >> 8) & 0xF) * 2);
@@ -118,9 +129,6 @@ int arm_data_processing(arm_core p, uint32_t ins) {
     	Value_Shifter = shifter_operand(p, ins);
     }
     
-    uint8_t c = get_bit(arm_read_cpsr(p), C);
-    uint64_t Res;
-
     switch ((ins & MASK_OPCODE) >> 21) { 
     	case (AND) :
             Res = Value_Rn & Value_Shifter;
@@ -143,15 +151,15 @@ int arm_data_processing(arm_core p, uint32_t ins) {
            	arm_write_register(p,Rd,Res);
     		break;
     	case (ADC) :
-    		Res = Value_Rn + Value_Shifter + c;
+    		Res = Value_Rn + Value_Shifter + get_bit(arm_read_cpsr(p), C);
     		arm_write_register(p,Rd,Res);
     		break;
     	case (SBC) :
-    		Res = Value_Rn - Value_Shifter - !(c);
+    		Res = Value_Rn - Value_Shifter - !(get_bit(arm_read_cpsr(p), C));
     		arm_write_register(p,Rd,Res);
     		break;
     	case (RSC) :
-    		Res = Value_Shifter - Value_Rn - !(c); 
+    		Res = Value_Shifter - Value_Rn - !(get_bit(arm_read_cpsr(p), C));
     		arm_write_register(p,Rd,Res);
     		break;
     	case (TST) :
@@ -186,14 +194,16 @@ int arm_data_processing(arm_core p, uint32_t ins) {
     		break;
     }
 
-    printf(" r%i <- (%i", Rd, Value_Rn);
-    test((ins & MASK_OPCODE) >> 21);
-    printf("%i) = %li\n", Value_Shifter, Res);
-
     if ((ins & MASK_STATUS) >> 20) {
     	flags_update(p, Res, Value_Rn, Value_Shifter);
     }
 
+    /* PRINT DE TEST*/
+    printf(" r%i <- (%li", Rd, Value_Rn);
+    print_codeop((ins & MASK_OPCODE) >> 21);
+    printf("%li) = %li\n", Value_Shifter, Res);
+    print_flags(p);
+	/* PRINT DE TEST*/
+
     return 0;
 }
-
