@@ -20,6 +20,7 @@ Contact: Guillaume.Huard@imag.fr
 	 700 avenue centrale, domaine universitaire
 	 38401 Saint Martin d'Hères
 */
+
 #include "arm_branch_other.h"
 #include "arm_constants.h"
 #include "util.h"
@@ -30,18 +31,17 @@ Contact: Guillaume.Huard@imag.fr
 #define MASK_TARGET_ADR 0xFFFFFF
 
 int32_t sign_extending(uint32_t x) {
-	if (x & 1 << 23) return x | 0xF000000;
+	if (x & 1 << 23) return x | 0x3F000000;
 	return x;
 }
 
 int arm_branch(arm_core p, uint32_t ins) {
-    printf("arm_branch\n");
-    printf("%i",ins & MASK_TARGET_ADR);
-    if (ins & MASK_L)
-        arm_write_register(p, 14, arm_read_register(p, 15)+4);
+
+    if (ins & MASK_L) arm_write_register(p, 14, arm_read_register(p, 15)+4);
+
     arm_write_register(p, 15, arm_read_register(p,15) + (sign_extending(ins & MASK_TARGET_ADR) << 2));
     return 0;
-}
+   }
 
 int arm_coprocessor_others_swi(arm_core p, uint32_t ins) {
     if (get_bit(ins, 24)) {

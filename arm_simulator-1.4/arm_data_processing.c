@@ -101,7 +101,7 @@ void flags_update(arm_core p, uint64_t res, uint32_t a, uint32_t b) {
 	change_bit(&cpsr, N, res >> 31 & 1);
 	change_bit(&cpsr, Z, res==0);
 	change_bit(&cpsr, C, res >> 32 & 1);
-	change_bit(&cpsr, V, get_bit(res, 32) != (((get_bit(a, 31) == (get_bit(b, 31))) == get_bit(res, 31))));
+	change_bit(&cpsr, V, get_bit(a, 31) == get_bit(b, 31) && get_bit(b, 31) != get_bit(res, 31));
 
 	arm_write_cpsr(p, cpsr);
 }
@@ -193,6 +193,7 @@ int arm_data_processing(arm_core p, uint32_t ins) {
     if ((ins & MASK_STATUS) >> 20) {
     	flags_update(p, Res, Value_Rn, Value_Shifter);
     }
+
     return 0;
 }
 
