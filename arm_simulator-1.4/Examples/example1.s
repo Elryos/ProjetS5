@@ -39,11 +39,12 @@ main :
 	mvn r5, r3 	@r5 = 0xFFFFFFFF
 	mvn r5, r1	@r5 = 0xFFFFFFFE
 	mvn r4, r6	@r4 = 0xFFFFFFF9
+	mov r6, #2      @r6 = 2
 
-	lsl r1, r1, #4  @r1 = 16
-	lsr r1, r1, #3  @r1 = 2
+	add r1, r1, r1 lsl #4  @r1 = 17 (0x11)
+	add r1, r1, r1 lsr r6  @r1 = 21 (0b10101, 0x15)
 	mov r4, #-16
-	asr r4, r4, #3  @r4 = -2
+	add r4, r3, r4 asr #3  @r4 = -2
 
 	swi 0x123456
 .data
