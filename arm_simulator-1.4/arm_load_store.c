@@ -50,13 +50,14 @@ Contact: Guillaume.Huard@imag.fr
 
 int arm_LDR_STR (arm_core p,uint32_t ins){
 	uint32_t address;
+	uint8_t c;
 
 	if ((ins & U) >> 23){
 		if(((ins & ADR_MOD) >> 25) == IMM){
 			address = arm_read_register(p,(ins & Rn) >>16) + (ins & offset_12);
 		}
 		else{
-			address = arm_read_register(p,(ins & Rn) >> 16) + shifter_operand(p,ins);
+			address = arm_read_register(p,(ins & Rn) >> 16) + shifter_operand(p,ins,&c);
 		}
 	}
 	else{
@@ -64,7 +65,7 @@ int arm_LDR_STR (arm_core p,uint32_t ins){
 			address = arm_read_register(p,(ins & Rn) >>16) - (ins & offset_12);
 		}
 		else{
-			address = arm_read_register(p,(ins & Rn) >> 16) - shifter_operand(p,ins);
+			address = arm_read_register(p,(ins & Rn) >> 16) - shifter_operand(p,ins,&c);
 		}
 	}
 	if (((ins >>24 & P) && (ins >>21 & W)) || (!(ins >>24 & P) && !(ins >>21 & W))){
