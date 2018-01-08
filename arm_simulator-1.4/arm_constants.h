@@ -34,8 +34,8 @@ Contact: Guillaume.Huard@imag.fr
 #define SBC 0b0110
 #define RSC 0b0111
 #define TST 0b1000
-#define TEQ 0b1001 
-#define CMP 0b1010 
+#define TEQ 0b1001
+#define CMP 0b1010
 #define CMN 0b1011
 #define ORR 0b1100
 #define MOV 0b1101

@@ -51,21 +51,22 @@ Contact: Guillaume.Huard@imag.fr
 //renvoie 0 si réussite, 1 si échec.
 int arm_LDR_STR (arm_core p,uint32_t ins){
 	uint32_t address;
+	uint8_t c;
 
 	if ((ins & MASK_U) >> 23){		// Test si l'on ajoute ou soustrait l'offset à l'adresse de base.		
 		if(((ins & MASK_ADR_MOD) >> 25) == IMM){		// Test si l'offset est une valeur immédiate ou une valeur stockée dans un registre. 
 			address = arm_read_register(p,(ins & MASK_Rn) >>16) + (ins & offset_12);
 		}
 		else{
-			address = arm_read_register(p,(ins & MASK_Rn) >> 16) + shifter_operand(p,ins);
-		}
+
+			address = arm_read_register(p,(ins & MASK_Rn) >> 16) + shifter_operand(p,ins,&c);
 	}
 	else{
 		if(((ins & MASK_ADR_MOD) >> 25) == IMM){		// Test si l'offset est une valeur immédiate ou une valeur stockée dans un registre. 
 			address = arm_read_register(p,(ins & MASK_Rn) >>16) - (ins & offset_12);
 		}
 		else{
-			address = arm_read_register(p,(ins & MASK_Rn) >> 16) - shifter_operand(p,ins);
+			address = arm_read_register(p,(ins & MASK_Rn) >> 16) - shifter_operand(p,ins,&c);
 		}
 	}
 	if (((ins >>24 & P) && (ins >>21 & W)) || (!(ins >>24 & P) && !(ins >>21 & W))){		//Test si l'adresse de base doit être "sauvegardée" 

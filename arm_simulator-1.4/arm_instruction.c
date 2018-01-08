@@ -130,7 +130,6 @@ static int arm_execute_instruction(arm_core p) {
     		arm_load_store_multiple(p, ins);
     		break;
     	case(BRANCH) :
-            printf("BRANCH\n"); 
             arm_branch(p, ins);
     		break;
     	case(COPROCESSOR_OTHERS_SWI) :
@@ -154,9 +153,17 @@ int arm_step(arm_core p) {
 }
 
 
-uint32_t shifter_operand(arm_core p, uint32_t ins) {
+uint8_t highest_bit(uint32_t x) {
+	uint8_t i;
+	for (i=31;i>0;i--) 
+		if ((x >> i) & 1) return i;
+	return 0;
+}
+
+uint32_t shifter_operand(arm_core p, uint32_t ins, uint8_t * c) {
     uint32_t Rm = arm_read_register(p, (ins & MASK_RM) >> 0);
     uint32_t Rs;
+    *c = 0;
 
     if ((ins & MASK_BY_REGISTER) >> 4) {
         Rs = arm_read_register(p, (ins & MASK_RS_REGISTER) >> 8);
@@ -166,6 +173,7 @@ uint32_t shifter_operand(arm_core p, uint32_t ins) {
 
     switch ((ins & MASK_SHIFT) >> 5) {
         case (LSL) :
+           	*c = (highest_bit(Rm) + Rs) > 31;
             return Rm << Rs;
         case (LSR) :
             return Rm >> Rs;
