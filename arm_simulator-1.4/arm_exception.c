@@ -35,6 +35,17 @@ void arm_exception(arm_core p, unsigned char exception) {
     /* Semantics of reset interrupt (ARM manual A2-18) */
     if (exception == RESET) {
         arm_write_cpsr(p, 0x1d3 | Exception_bit_9);
+	} else if (exception == INTERRUPT) {
+		uint32_t address = arm_read_register(p,15);
+		uint32_t old_cpsr = arm_read_cpsr(p);
+		uint32_t new_cpsr = (old_cpsr & 0x040) | 0x192; 
+		arm_write_register(p,14,address);
+		arm_write_spsr(p,old_cpsr);
+		arm_write_cpsr(p,new_cpsr);
+
+
+
+		/*coder SUBS PC,R14,#4 pour retourner au process normal*/
+	}
 	arm_write_usr_register(p, 15, 0);
-    }
 }
