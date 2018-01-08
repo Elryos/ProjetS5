@@ -60,6 +60,7 @@ int arm_LDR_STR (arm_core p,uint32_t ins){
 		else{
 
 			address = arm_read_register(p,(ins & MASK_Rn) >> 16) + shifter_operand(p,ins,&c);
+		}
 	}
 	else{
 		if(((ins & MASK_ADR_MOD) >> 25) == IMM){		// Test si l'offset est une valeur immédiate ou une valeur stockée dans un registre. 
