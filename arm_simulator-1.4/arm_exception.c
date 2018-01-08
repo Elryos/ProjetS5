@@ -33,19 +33,45 @@ Contact: Guillaume.Huard@imag.fr
 void arm_exception(arm_core p, unsigned char exception) {
     /* We only support RESET initially */
     /* Semantics of reset interrupt (ARM manual A2-18) */
-    if (exception == RESET) {
+   if (exception == RESET) {
         arm_write_cpsr(p, 0x1d3 | Exception_bit_9);
-	} else if (exception == INTERRUPT) {
-		uint32_t address = arm_read_register(p,15);
-		uint32_t old_cpsr = arm_read_cpsr(p);
-		uint32_t new_cpsr = (old_cpsr & 0x040) | 0x192; 
-		arm_write_register(p,14,address);
-		arm_write_spsr(p,old_cpsr);
-		arm_write_cpsr(p,new_cpsr);
 
+   } else {
+   		uint32_t cpsr = arm_read_cpsr(p);
+   		int d = 4;
+   		
 
+		arm_write_spsr(p,cpsr);
 
-		/*coder SUBS PC,R14,#4 pour retourner au process normal*/
+	    switch (exception) {
+			case (UNDEFINED_INSTRUCTION) :
+				cpsr = (cpsr & 0x140) | 0x9b;
+				break;
+			case (SOFTWARE_INTERRUPT) :
+				cpsr = (cpsr & 0x140) | 0x93;
+				break;
+			case (PREFETCH_ABORT) :
+				cpsr = (cpsr & 0x40) | 0x197;
+				break;
+			case (DATA_ABORT) :
+				d = 8;
+				cpsr = (cpsr & 0x40) | 0x197;
+				break;
+			case (INTERRUPT) :
+				d = 8;
+				cpsr = (cpsr & 0x40) | 0x192;
+				break;
+			case (FAST_INTERRUPT) :
+				d = 8;
+				cpsr = 0x1d1;
+				break;
+			default :
+				break;
+		}
+
+		arm_write_register(p, LR, arm_read_register(p, PC) + d);
+		arm_write_cpsr(p, cpsr); 
 	}
-	arm_write_usr_register(p, 15, 0);
+
+	arm_write_usr_register(p, PC, (exception -1 ) * 4); //multiple de 4 dans le PC en fonction de l'exception
 }

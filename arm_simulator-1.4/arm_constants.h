@@ -80,8 +80,9 @@ Contact: Guillaume.Huard@imag.fr
 #define SOFTWARE_INTERRUPT      3
 #define PREFETCH_ABORT          4
 #define DATA_ABORT              5
-#define INTERRUPT               6
-#define FAST_INTERRUPT          7
+#define IMPRECISE_ABORT			6	//Inutile ARMv6
+#define INTERRUPT               7
+#define FAST_INTERRUPT          8
 
 /* Some CPSR bits */
 #define N 31
