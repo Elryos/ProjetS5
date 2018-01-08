@@ -151,15 +151,17 @@ int arm_data_processing(arm_core p, uint32_t ins) {
     		arm_write_register(p,Rd,Res);
     		break;
     	case (TST) :
-    		Res = Value_Rn & Value_Shifter;
-    		break;
-    	case (TEQ) :
-    		Res = Value_Rn ^ Value_Shifter;
-    		break;
-    	case (CMP) :
-    		Res = Value_Rn - Value_Shifter;
-    		break;
-    	case (CMN) :
+            if (get_bit(ins,20)) arm_miscellaneous(p,ins);
+            Res = Value_Rn & Value_Shifter;
+            break;
+        case (TEQ) :
+            Res = Value_Rn ^ Value_Shifter;
+            break;
+        case (CMP) :
+            if (get_bit(ins,20)) arm_miscellaneous(p,ins);
+            Res = Value_Rn - Value_Shifter;
+            break;
+        case (CMN) :
     		Res = Value_Rn + Value_Shifter;
     		break;
     	case (ORR) :

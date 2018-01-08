@@ -38,7 +38,6 @@ int32_t sign_extending(uint32_t x) {
 int arm_branch(arm_core p, uint32_t ins) {
 
     if (ins & MASK_L) {
-        printf("LLLLLLLLLLLLLLLLLL\n");
         arm_write_register(p, 14, arm_read_register(p, 15)+4);
     }
 
@@ -57,5 +56,13 @@ int arm_coprocessor_others_swi(arm_core p, uint32_t ins) {
 }
 
 int arm_miscellaneous(arm_core p, uint32_t ins) {
-    return UNDEFINED_INSTRUCTION;
+    // MRS ?
+    if (get_bit(ins,22)) {
+        if (!arm_current_mode_has_spsr(p)) return UNDEFINED_INSTRUCTION;
+        arm_write_register(p, get_bits(ins,15,12), arm_read_spsr(p));
+    } else {
+        arm_write_register(p, get_bits(ins,15,12), arm_read_cpsr(p));
+    }
+
+    return 0;
 }
