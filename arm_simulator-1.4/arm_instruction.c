@@ -45,7 +45,8 @@ Contact: Guillaume.Huard@imag.fr
 
 #define DATA_PROCESSING_SHIFT 0b000
 #define DATA_PROCESSING_IMMEDIATE 0b001
-#define LOAD_STORE 0b010
+#define LOAD_STORE_IMMEDIATE 0b010
+#define LOAD_STORE_REGISTER 0b011
 #define LOAD_STORE_MULTIPLE 0b100
 #define BRANCH 0b101
 #define COPROCESSOR_OTHERS_SWI 0b111
@@ -123,9 +124,12 @@ static int arm_execute_instruction(arm_core p) {
     	case(DATA_PROCESSING_IMMEDIATE)	:
     		arm_data_processing(p, ins);
     		break;
-    	case(LOAD_STORE) :
-    		arm_load_store(p, ins);
-    		break;
+        case(LOAD_STORE_IMMEDIATE) :
+            arm_load_store(p, ins);
+            break;
+    	case(LOAD_STORE_REGISTER) :
+            arm_load_store(p, ins);
+            break;
     	case(LOAD_STORE_MULTIPLE) : 
     		arm_load_store_multiple(p, ins);
     		break;

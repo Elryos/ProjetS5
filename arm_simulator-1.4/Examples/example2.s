@@ -1,11 +1,16 @@
 .global main
 .text
-
 main:
-	MOVS r0, #0
-	MOVS r1, #-1
-	MOVS r2, #30
-	MOVS r3, #4
-	ADDS r4, r0, r3, LSL #1
-	ADDS r5, r4, LSL r2
-	swi 0x123456
+    mov r0, #0x12
+    mov r1, #0x34
+    add r0, r1, r0, lsl #8
+    mov r1, #0x56
+    add r0, r1, r0, lsl #8
+    mov r1, #0x78
+    add r0, r1, r0, lsl #8
+    mov r1, #0x2000
+    str r0, [r1]
+    ldrb r2, [r1]
+    add r1, r1, #3
+    ldrb r3, [r1]
+    swi 0x123456

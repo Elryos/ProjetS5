@@ -1,16 +1,13 @@
 .global main
 .text
 main:
-    mov r0, #0x12000000
-    mov r1, #0x2000
-ici:str r0, [r1]
-    ldr r2, [r1]
-    ldrb r0, [r1]
-    ldrh r0, [r1]
-    mov r0, r2
-    mov r3, #0x5000
-    add r2, r3
-    bl ici
+    mov r0, #0xFF000
+    mov r4, #1
+    ldr r1, =donnee
+    ldr r2, =fin
+    add r4, #0
+    ldr r5, [r1, +r4, lsl #2]
+    ldmia r1!, {r6, r7}
     swi 0x123456
 .data
 donnee:
