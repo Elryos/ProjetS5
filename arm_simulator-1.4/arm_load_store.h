@@ -29,4 +29,12 @@ int arm_load_store(arm_core p, uint32_t ins);
 int arm_load_store_multiple(arm_core p, uint32_t ins);
 int arm_coprocessor_load_store(arm_core p, uint32_t ins);
 
+uint32_t arm_save(arm_core p,uint32_t ins);
+
+uint32_t arm_offset(arm_core p,uint32_t ins);
+uint32_t arm_offset_op(arm_core p,uint32_t ins);
+
+uint32_t arm_offset_halfword(arm_core p,uint32_t ins);
+uint32_t arm_offset_op_halfword(arm_core p,uint32_t ins);
+
 #endif
