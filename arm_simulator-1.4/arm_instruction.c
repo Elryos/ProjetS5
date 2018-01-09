@@ -49,6 +49,7 @@ Contact: Guillaume.Huard@imag.fr
 #define LOAD_STORE_REGISTER 0b011
 #define LOAD_STORE_MULTIPLE 0b100
 #define BRANCH 0b101
+#define LOAD_STORE_COPROC 0b110
 #define COPROCESSOR_OTHERS_SWI 0b111
 
 
@@ -156,13 +157,6 @@ int arm_step(arm_core p) {
     return result;
 }
 
-
-uint8_t highest_bit(uint32_t x) {
-	uint8_t i;
-	for (i=31;i>0;i--) 
-		if ((x >> i) & 1) return i;
-	return 0;
-}
 
 uint32_t shifter_operand(arm_core p, uint32_t ins, uint8_t * c) {
     uint32_t Rm = arm_read_register(p, (ins & MASK_RM) >> 0);

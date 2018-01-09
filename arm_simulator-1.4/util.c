@@ -39,3 +39,10 @@ int is_big_endian() {
 void change_bit(uint32_t * s, uint8_t n, uint8_t val) {
 	*s = (*s & ~(1 << n)) | (val << n);
 }
+
+uint8_t highest_bit(uint32_t x) {
+	uint8_t i;
+	for (i=31;i>0;i--) 
+		if ((x >> i) & 1) return i;
+	return 0;
+}

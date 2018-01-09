@@ -80,7 +80,7 @@ uint32_t read_spsr(registers r) {
 	if (mode==UND) return r[34];
 	if (mode==IRQ) return r[35];
 	if (mode==FIQ) return r[36];
-	return DATA_ABORT;
+	return 0;
 }
 
 void write_register(registers r, uint8_t reg, uint32_t value) {
