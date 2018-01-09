@@ -43,7 +43,7 @@ uint8_t get_mode(registers r) {
 } 
 
 int current_mode_has_spsr(registers r) {
-    return get_mode(r) != USR && get_mode(r) != SYS;
+    return (get_mode(r) != USR) && (get_mode(r) != SYS);
 }
 
 int in_a_privileged_mode(registers r) {
@@ -80,7 +80,7 @@ uint32_t read_spsr(registers r) {
 	if (mode==UND) return r[34];
 	if (mode==IRQ) return r[35];
 	if (mode==FIQ) return r[36];
-	return 0;
+	return DATA_ABORT;
 }
 
 void write_register(registers r, uint8_t reg, uint32_t value) {

@@ -35,3 +35,7 @@ int is_big_endian() {
     static uint32_t one = 1;
     return ((* (uint8_t *) &one) == 0);
 }
+
+void change_bit(uint32_t * s, uint8_t n, uint8_t val) {
+	*s = (*s & ~(1 << n)) | (val << n);
+}

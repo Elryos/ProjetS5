@@ -20,6 +20,7 @@ Contact: Guillaume.Huard@imag.fr
 	 700 avenue centrale, domaine universitaire
 	 38401 Saint Martin d'Hères
 */
+
 #ifndef __REGISTERS_H__
 #define __REGISTERS_H__
 #include <stdint.h>
@@ -62,14 +63,19 @@ void write_spsr(registers r, uint32_t value);
 14	LR
 15	PC
 16 	CPSR
+
 17	SP_SVC
 18	LR_SVC
+
 19	SP_ABT
 20	LR_ABT
+
 21	SP_UND
 22	LR_UND
+
 23	SP_IRQ
 24	LR_IRQ
+
 25	r8_FIQ
 26	r9_FIQ
 27	r10_FIQ
@@ -77,6 +83,7 @@ void write_spsr(registers r, uint32_t value);
 29	r12_FIQ
 30	SP_FIQ
 31	LR_FIQ
+
 32	SPSR_SVC
 33	SPSR_ABT
 34	SPSR_UND
