@@ -64,6 +64,7 @@ static int arm_execute_instruction(arm_core p) {
 
     if (arm_fetch(p, &ins)) return 1;
 
+//------------------------------------------------------- Test des differentes conditions
     switch ((ins & MASK_COND) >> 28) {
     	case (EQ) :
     		if (!z) return 0;
@@ -113,6 +114,7 @@ static int arm_execute_instruction(arm_core p) {
     		break;
     }
 
+//------------------------------------------------------- Test du type d'instructions
     switch ((ins & MASK_TYPE) >> 25) {
     	case(DATA_PROCESSING_SHIFT) :
     		// CAS PARTICULIER LDRH, STRH
@@ -122,10 +124,10 @@ static int arm_execute_instruction(arm_core p) {
                 arm_data_processing(p, ins);
             }
     		break;
-    	case(DATA_PROCESSING_IMMEDIATE)	:
+    	case(DATA_PROCESSING_IMMEDIATE)	:                  //Immediat et shift testés à l'intérieur de data_processing
     		arm_data_processing(p, ins);
     		break;
-        case(LOAD_STORE_IMMEDIATE) :
+        case(LOAD_STORE_IMMEDIATE) :                       //Immediat et shift  testés à l'intérieur de load_store
             arm_load_store(p, ins);
             break;
     	case(LOAD_STORE_REGISTER) :
@@ -147,7 +149,7 @@ static int arm_execute_instruction(arm_core p) {
     return 0;
 }
 
-
+//------------------------------------------------------- Fonction pour chaque étape
 int arm_step(arm_core p) {
     int result;
 

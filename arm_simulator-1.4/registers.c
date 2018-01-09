@@ -26,8 +26,8 @@ Contact: Guillaume.Huard@imag.fr
 #include <stdlib.h>
 
 registers registers_create() {
-    uint32_t * r = malloc(sizeof(uint32_t[37]));
-    return r;
+    uint32_t * r = malloc(sizeof(uint32_t[37]));			//registers representés par un tableau de taille 37
+    return r;												//details du tableau dans registers.h
 }
 
 void registers_destroy(registers r) {
@@ -53,11 +53,11 @@ int in_a_privileged_mode(registers r) {
 int mode_offset(uint8_t mode) {
 	if (mode==USR) return 0;
 	if (mode==SYS) return 0;
-	if (mode==SVC) return 3;
-	if (mode==ABT) return 5;
-	if (mode==UND) return 7;
-	if (mode==IRQ) return 9;
-	if (mode==FIQ) return 16;
+	if (mode==SVC) return 4;
+	if (mode==ABT) return 6;
+	if (mode==UND) return 8;
+	if (mode==IRQ) return 10;
+	if (mode==FIQ) return 17;
 	return 0;
 }
 

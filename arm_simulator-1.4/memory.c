@@ -26,7 +26,7 @@ Contact: Guillaume.Huard@imag.fr
 #include "arm_constants.h"
 #include "util.h"
 
-struct memory_data {
+struct memory_data {                    //memoire representee par un tableau m de taille size en type is_big_endian
     uint8_t * m;
     size_t size;
     int is_big_endian;

@@ -36,6 +36,9 @@ Contact: Guillaume.Huard@imag.fr
 #define MASK_STATUS 0b1 << 20
 #define MASK_MAJREG 0b11 << 23
 
+
+
+//------------------------------------------------------- Fonctions de verification
 void print_codeop(uint8_t code) {
     switch (code) { 
         case (AND) :
@@ -103,6 +106,9 @@ void print_flags(arm_core p) {
 }
 
 
+
+
+//------------------------------------------------------- Traitement des instructions
 int arm_data_processing(arm_core p, uint32_t ins) {
     
     uint64_t Value_Rn = arm_read_register(p, (ins & MASK_RN) >> 16);
