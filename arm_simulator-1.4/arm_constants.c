@@ -32,11 +32,11 @@ static char *arm_register_names[] = {"R00", "R01", "R02", "R03", "R04", "R05",
 
 static char *arm_exception_names[] = {NULL, "reset", "undefined instruction",
                                       "software interrupt", "prefetch abort",
-                                      "data abort", "interrupt",
+                                      "data abort", "imprecise_abort", "interrupt",
                                       "fast interrupt"};
 
 char *arm_get_exception_name(unsigned char exception) {
-    if (exception < 8)
+    if (exception < 9)
         return arm_exception_names[exception];
     else
         return NULL;
