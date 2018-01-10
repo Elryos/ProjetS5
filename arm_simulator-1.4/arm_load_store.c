@@ -29,25 +29,6 @@ Contact: Guillaume.Huard@imag.fr
 #include "util.h"
 #include "debug.h"
 
-#define MASK_LS 0b1 <<20
-#define MASK_BYTE 0b1 <<22
-#define MASK_IMM_REG 0b1 <<22
-#define MASK_ADR_MOD 0b1 <<25
-#define MASK_U 0b1 <<23
-#define MASK_P 0b1 <<24
-#define MASK_Rn 0b1111 <<16
-#define MASK_Rd 0b1111 <<12
-#define offset_12 0xFFF
-#define MASK_IMMH 0b1111 <<8
-#define MASK_IMML 0b1111
-#define MASK_Rm 0b1111
-
-#define MASK_REGLIST 0b1
-
-//#define IMM 0b0
-
-#define REG_SCA 0b1
-#define P 0b1
 
 uint32_t addressing_mode(arm_core p, uint32_t ins) {
 	uint8_t is_half = !get_bit(ins, 26);
@@ -82,144 +63,96 @@ int arm_load_store(arm_core p, uint32_t ins) {
 	uint8_t is_load = get_bit(ins, 20);
 	uint8_t is_half = get_bit(ins,7) && get_bit(ins,4);
 	uint8_t is_byte = get_bit(ins, 22);
-	/*uint8_t P = get_bit(ins, 24);
-	uint8_t W = get_bit(ins, 21);*/
-	
-	uint32_t address = arm_read_register(p, Rn) + addressing_mode(p, ins);;
+	uint8_t is_P = get_bit(ins, 24);
+	uint8_t is_W = get_bit(ins, 21);
+	uint32_t val;
 
-	// SAUVEGARDE, P, W ? ? ? ???
+	int res;
+	uint32_t address = arm_read_register(p, Rn);
+
+	if (is_P) address+= addressing_mode(p, ins);
 
 	if (is_load) {
 		// LOAD
-		if (is_half) {
-			uint16_t val;
-			arm_read_half(p, address, &val);
-			return arm_write_register(p, Rd, val);
+		if        (is_half) {
+			arm_read_half(p, address, (uint16_t *) &val);
 		} else if (is_byte) {
-			uint8_t val;
-			arm_read_byte(p, address, &val);
-			return arm_write_register(p, Rd, val);
-		} else {
-			uint32_t val;
+			arm_read_byte(p, address, (uint8_t *) &val);
+		} else {//(is_word)
 			arm_read_word(p, address, &val);
-			return arm_write_register(p, Rd, val);
 		}
 
+		if (!is_P && is_W ) res = arm_write_usr_register(p,Rd,val);	else res = arm_write_register(p,Rd,val);
 
 	} else {
 		// STORE
-		uint32_t val = arm_read_register(p, Rd);
-		if (is_half) {
-			return arm_write_half(p, address, (uint16_t) val);
+		if (!is_P && is_W ) val = arm_read_usr_register(p, Rd);	else val = arm_read_register(p, Rd);
+
+		if        (is_half) {
+			res = arm_write_half(p, address, (uint16_t) val);
 		} else if (is_byte) {
-			return arm_write_byte(p, address, (uint8_t) val);
-		} else {
-			return arm_write_word(p, address, val);
+			res = arm_write_byte(p, address, (uint8_t) val);
+		} else {//(is_word)
+			res = arm_write_word(p, address, val);
 		}	
 	}
+
+	if (!is_P) address+= addressing_mode(p, ins);
+
+	if (!is_P || is_W) arm_write_register(p, Rn, address);
+
+	return res;
 }
 
 
 int arm_load_store_multiple(arm_core p, uint32_t ins) {
-	int address;
-	int i;
-	int nb_bits = 0;
-	uint32_t value;
-	if ((ins & MASK_P) >> 24){						//Test si l'on est en incrémente ou décrémente before
-		if((ins & MASK_U) >> 23){					// Test si l'on ajoute ou soustrait l'offset à l'adresse de base.
-			address = arm_read_register(p,(ins & MASK_Rn) >> 16) + 4;
-			for (i = 0;i <= 15;i++){				//parcours des 16 bit "registre"
-				if((ins >> i) & MASK_REGLIST){		//Si le Nième bit est à 1 on traite le Nième registre
-					if((ins & MASK_LS)>>20){		//LOAD ou STORE
-						if(!arm_read_word(p,address,&value)){
-							arm_write_register(p,i,value);
-						}
-					}
-					else{
-						value = arm_read_register(p,i);
-						arm_write_word(p,address,value);
-					}
-					address=address+4;
-				}
+	uint8_t Rn = get_bits(ins, 19, 16);
+	uint8_t is_load = get_bit(ins, 20);
+	uint8_t is_incr = get_bit(ins,23);
+	uint8_t is_before = get_bit(ins,24);
+	uint8_t write_back = get_bit(ins,21);
+	uint8_t Number_Of_Set_Bits = 0;
+	uint32_t val;	
+	int Ri;
+	
+	uint32_t start_address = arm_read_register(p, Rn);
+	uint32_t address = start_address;
+
+	if (!is_incr)
+		for (Ri=0;Ri<16;Ri++) 
+			if((ins >> Ri) & 1) 
+				address+=4;
+
+	if (is_incr == is_before) address+=4;
+
+	for (Ri=0;Ri<16;Ri++) {
+		if ((ins >> Ri) & 1) {		
+			if (is_load) {
+				//LOAD
+				arm_read_word(p, address, &val);
+				arm_write_register(p, Ri, val);			
+			} else {
+				//STORE
+				val = arm_read_register(p, Ri);
+				arm_write_word(p,address,val);
 			}
-			address=address-4;
+
+			address = is_incr ? address+4 : address-4 ;
+			Number_Of_Set_Bits++;
 		}
-		else{
-			for (i = 0; i <= 15; i++){				//premier parcours pour connaître le nombre de registre à traiter.
-				if ((ins >> i) & MASK_REGLIST){
-					nb_bits++;
-				}
-			}
-			address = arm_read_register(p,(ins & MASK_Rn) >> 16) - (nb_bits*4);
-			for (i = 0; i <= 15; i++){				//Parcours des bits "registre"
-				if((ins >> i) & MASK_REGLIST){		//Si le Nième bit est à 1 on traite le Nième registre.
-					if((ins & MASK_LS)>>20){		//LOAD ou STORE
-						if(!arm_read_word(p,address,&value)){
-							arm_write_register(p,i,value);
-						}
-					}
-					else{
-						value = arm_read_register(p,i);
-						arm_write_word(p,address,value);
-					}
-					address=address+4;
-				}
-			}
-			address=address-4;
-		}	
 	}
 
-	else{
-
-		if((ins & MASK_U) >> 23){					// Test si l'on ajoute ou soustrait l'offset à l'adresse de base.
-			address = arm_read_register(p,(ins & MASK_Rn) >> 16);
-			for (i = 0;i <= 15;i++){				//Parcours des bits "registre"
-				if((ins >> i) & MASK_REGLIST){		//Si le Nième bit est à 1 on traite le Nième registre.
-					if((ins & MASK_LS)>>20){		//LOAD ou STORE
-						if(!arm_read_word(p,address,&value)){
-							arm_write_register(p,i,value);
-						}
-					}
-					else{
-						value = arm_read_register(p,i);
-						arm_write_word(p,address,value);
-					}
-					address=address+4;
-				}
-			}
-			address=address-4;
+	if (write_back) {
+		if (is_incr) {
+			arm_write_register(p, Rn, start_address+Number_Of_Set_Bits*4);
+		} else {
+			arm_write_register(p, Rn, start_address-Number_Of_Set_Bits*4);
 		}
-		else{
-			for (i = 0; i <= 15; i++){				//premier parcours pour connaître le nombre de registre à traiter.
-				if ((ins >> i) & MASK_REGLIST){
-					nb_bits++;
-				}
-			}
-			address = arm_read_register(p,(ins & MASK_Rn) >> 16) - (nb_bits * 4) + 4;
-			for (i = 0;i <= 15;i++){				//Parcours des bits "registre"
-				if((ins >> i) & MASK_REGLIST){		//Si le Nième bit est à 1 on traite le Nième registre.
-					if((ins & MASK_LS)>>20){		//LOAD ou STORE
-						if(!arm_read_word(p,address,&value)){
-							arm_write_register(p,i,value);
-						}
-					}
-					else{
-						value = arm_read_register(p,i);
-						arm_write_word(p,address,value);
-					}
-					address=address+4;
-				}
-			}
-			address=address-4;
-		}	
-
-	}
-	if ((ins >> 21)){							//Si le bit W est à 1 on sauvegarde Rn
-		arm_write_register(p,(ins & MASK_Rn) >> 16,address);
 	}
 
-    return 0;
+	return 0;
 }
+
 
 int arm_coprocessor_load_store(arm_core p, uint32_t ins) {
     /* Not implemented */
