@@ -85,16 +85,16 @@ static int arm_execute_instruction(arm_core p) {
     		if (n) return 0;
     		break;
     	case (VS) :
-    		if (!z) return 0;
+    		if (!v) return 0;
     		break;
     	case (VC) :
-    		if (z) return 0;
+    		if (v) return 0;
     		break;
     	case (HI) :
     		if (!(c && !z)) return 0;
     		break;
     	case (LS) :
-    		if (!(!c && z)) return 0;
+    		if (!(!c || z)) return 0;
     		break;
     	case (GE) :
     		if (n!=v) return 0;
