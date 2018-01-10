@@ -1,6 +1,6 @@
 PORTSIM=4455
 OPTION="--trace-registers --trace-memory"
-TAILLE=200
+TAILLE=102
 
 if [ $# -eq 2 ]
 then 
@@ -47,7 +47,7 @@ b 1
 cont" >> cmdUs.txt
 
 
-for cpt in `seq 1 $TAILLE`
+for cpt in `seq 3 $TAILLE`
 do 
 	echo "printf \"------------------------------------\n\"
 i r
