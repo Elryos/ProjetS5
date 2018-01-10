@@ -66,8 +66,8 @@ int arm_load_store(arm_core p, uint32_t ins) {
 	uint8_t is_P = get_bit(ins, 24);
 	uint8_t is_W = get_bit(ins, 21);
 	uint32_t val;
-
 	int res;
+
 	uint32_t address = arm_read_register(p, Rn);
 
 	if (is_P) address+= addressing_mode(p, ins);
@@ -115,6 +115,7 @@ int arm_load_store_multiple(arm_core p, uint32_t ins) {
 	uint8_t Number_Of_Set_Bits = 0;
 	uint32_t val;	
 	int Ri;
+	int res;
 	
 	uint32_t start_address = arm_read_register(p, Rn);
 	uint32_t address = start_address;
@@ -132,11 +133,11 @@ int arm_load_store_multiple(arm_core p, uint32_t ins) {
 				//LOAD
 				arm_read_word(p, address, &val);
 				if (Ri==PC) val&=0xFFFFFFFE;
-				arm_write_register(p, Ri, val);
+				res = arm_write_register(p, Ri, val);
 			} else {
 				//STORE
 				val = arm_read_register(p, Ri);
-				arm_write_word(p,address,val);
+				res = arm_write_word(p,address,val);
 			}
 
 			address = is_incr ? address+4 : address-4 ;
@@ -152,7 +153,7 @@ int arm_load_store_multiple(arm_core p, uint32_t ins) {
 		}
 	}
 
-	return 0;
+	return res;
 }
 
 

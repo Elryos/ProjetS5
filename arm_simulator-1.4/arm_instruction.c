@@ -103,7 +103,7 @@ static int arm_execute_instruction(arm_core p) {
     		if (n==v) return 0;
     		break;
     	case (GT) :
-    		if (!(z && (n==v))) return 0;
+    		if (!(!z && (n==v))) return 0;
     		break;
     	case (LE) :
     		if (!(z || n!=v)) return 0;
