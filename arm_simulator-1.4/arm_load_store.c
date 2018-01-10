@@ -82,6 +82,7 @@ int arm_load_store(arm_core p, uint32_t ins) {
 			arm_read_word(p, address, &val);
 		}
 
+		if (Rd==PC) val&=0xFFFFFFFE;
 		if (!is_P && is_W ) res = arm_write_usr_register(p,Rd,val);	else res = arm_write_register(p,Rd,val);
 
 	} else {
@@ -130,7 +131,8 @@ int arm_load_store_multiple(arm_core p, uint32_t ins) {
 			if (is_load) {
 				//LOAD
 				arm_read_word(p, address, &val);
-				arm_write_register(p, Ri, val);			
+				if (Ri==PC) val&=0xFFFFFFFE;
+				arm_write_register(p, Ri, val);
 			} else {
 				//STORE
 				val = arm_read_register(p, Ri);
@@ -143,7 +145,7 @@ int arm_load_store_multiple(arm_core p, uint32_t ins) {
 	}
 
 	if (write_back) {
-		if (is_incr) {
+		if (is_incr) { 
 			arm_write_register(p, Rn, start_address+Number_Of_Set_Bits*4);
 		} else {
 			arm_write_register(p, Rn, start_address-Number_Of_Set_Bits*4);
