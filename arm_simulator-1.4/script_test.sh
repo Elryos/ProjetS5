@@ -57,10 +57,10 @@ echo "set loggging off
 q" >> cmdUs.txt
 	
 
-#arm-none-eabi-gdb -x cmdSim
+arm-none-eabi-gdb -x cmdSim
 
 
-#xterm -e "arm-none-eabi-gdb -x cmdUs"
+xterm -e "arm-none-eabi-gdb -x cmdUs"
 
 
 ./arm_simulator --gdb-port $PORTSIM $OPTION
