@@ -37,7 +37,10 @@ int is_big_endian() {
 }
 
 void change_bit(uint32_t * s, uint8_t n, uint8_t val) {
-	*s = (*s & ~(1 << n)) | (val << n);
+	if (val)
+		*s = set_bit(*s,n);
+	else
+		*s = clr_bit(*s,n);
 }
 
 uint8_t highest_bit(uint32_t x) {

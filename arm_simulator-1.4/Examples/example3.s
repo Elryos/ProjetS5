@@ -5,10 +5,11 @@ func:
 		LDR R0, =don
 		MOV R1, #0
 		MOV R5, #0
-for:	CMP	R5, #3
+for:	CMP	R5,  #3
 		BGT fin
 		LDRB R4, [R0, R5]
-		ADD R1, R1, R4, LSL R5
+		MOV R6, R5, LSL #3
+		ADD R1, R1, R4, LSL R6
 		ADD R5, #1
         B for
 fin:	STR R1, [R0, #4]

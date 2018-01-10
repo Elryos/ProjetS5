@@ -123,7 +123,7 @@ int arm_load_store_multiple(arm_core p, uint32_t ins) {
 	if (!is_incr)
 		for (Ri=0;Ri<16;Ri++) 
 			if((ins >> Ri) & 1) 
-				address+=4;
+				address-=4;
 
 	if (is_incr == is_before) address+=4;
 
@@ -140,7 +140,8 @@ int arm_load_store_multiple(arm_core p, uint32_t ins) {
 				res = arm_write_word(p,address,val);
 			}
 
-			address = is_incr ? address+4 : address-4 ;
+			//address = is_incr ? address+4 : address-4 ;
+			address+=4;
 			Number_Of_Set_Bits++;
 		}
 	}

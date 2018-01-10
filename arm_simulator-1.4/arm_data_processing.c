@@ -111,17 +111,17 @@ void print_flags(arm_core p) {
 //------------------------------------------------------- Traitement des instructions
 int arm_data_processing(arm_core p, uint32_t ins) {
     
-    uint64_t Value_Rn = arm_read_register(p, (ins & MASK_RN) >> 16);
+    uint32_t Value_Rn = arm_read_register(p, (ins & MASK_RN) >> 16);
     uint8_t Rd = (ins & MASK_RD) >> 12;
-    uint64_t Value_Shifter;
-    uint64_t Res;
-    uint8_t force_carry;
+    uint32_t Value_Shifter;
+    uint32_t Res;
+    uint8_t force_carry=0;
     
 
-    // CALCUL DE RM, SI IMMEDIATE OU SHIFT OPERAND
+    // CALCUL DE RM, SI IMMEDIATE OU SHFiT OPERAND
     if ((ins & MASK_I) >> 25)
     	Value_Shifter = ror(ins & 0xFF, ((ins >> 8) & 0xF) * 2);
-    else
+    else 
     	Value_Shifter = shifter_operand(p, ins, &force_carry);
 
     
@@ -129,29 +129,41 @@ int arm_data_processing(arm_core p, uint32_t ins) {
     switch ((ins & MASK_OPCODE) >> 21) { 
     	case (AND) :
             Res = Value_Rn & Value_Shifter;
+            arm_write_register(p,Rd,Res);
     		break;
     	case (EOR) :
             Res = Value_Rn ^ Value_Shifter; 
+            arm_write_register(p,Rd,Res);
     		break;
     	case (SUB) :
-    		Res = Value_Rn - Value_Shifter ;  
-    		break;
-    	case (RSB) :
-    		Res = Value_Shifter - Value_Rn ;    
-    		break;
-    	case (ADD) :
+            Value_Shifter*=-1;
+            Res = Value_Rn + Value_Shifter ;  
+            arm_write_register(p,Rd,Res);
+            break;
+        case (RSB) :
+            Value_Rn*=-1;
+            Res = Value_Shifter + Value_Rn ;    
+            arm_write_register(p,Rd,Res);
+            break;
+        case (ADD) :
             Res = Value_Rn + Value_Shifter ;   
-    		break;
-    	case (ADC) :
-    		Res = Value_Rn + Value_Shifter + get_bit(arm_read_cpsr(p), C);
-    		break;
-    	case (SBC) :
-    		Res = Value_Rn - Value_Shifter - !(get_bit(arm_read_cpsr(p), C));
-    		break;
-    	case (RSC) :
-    		Res = Value_Shifter - Value_Rn - !(get_bit(arm_read_cpsr(p), C));
-    		break;
-    	case (TST) :
+            arm_write_register(p,Rd,Res);
+            break;
+        case (ADC) :
+            Res = Value_Rn + Value_Shifter + get_bit(arm_read_cpsr(p), C);
+            arm_write_register(p,Rd,Res);
+            break;
+        case (SBC) :
+            Value_Shifter*=-1;
+            Res = Value_Rn + Value_Shifter - !(get_bit(arm_read_cpsr(p), C));
+            arm_write_register(p,Rd,Res);
+            break;
+        case (RSC) :
+            Value_Rn*=-1;            
+            Res = Value_Shifter + Value_Rn - !(get_bit(arm_read_cpsr(p), C));
+            arm_write_register(p,Rd,Res);
+            break;
+        case (TST) :
             // CAS PARTICULIER MRS
             if (get_bit(ins,20)) arm_miscellaneous(p,ins);
             Res = Value_Rn & Value_Shifter;
@@ -161,23 +173,28 @@ int arm_data_processing(arm_core p, uint32_t ins) {
             break;
         case (CMP) :
             // CAS PARTICULIER MRS
-            if (get_bit(ins,20)) arm_miscellaneous(p,ins);
-            Res = Value_Rn - Value_Shifter;
+            if (!get_bit(ins,20)) arm_miscellaneous(p,ins);
+            Value_Shifter*=-1;
+            Res = Value_Rn + Value_Shifter;
             break;
         case (CMN) :
     		Res = Value_Rn + Value_Shifter;
     		break;
     	case (ORR) :
     		Res = Value_Rn | Value_Shifter;
+            arm_write_register(p,Rd,Res);
     		break;
     	case (MOV) :
     		Res = Value_Shifter;
+            arm_write_register(p,Rd,Res);
     		break;
     	case (BIC) :
     		Res = Value_Rn & ~(Value_Shifter) ;
+            arm_write_register(p,Rd,Res);
     		break;
     	case (MVN) :
     		Res = ~(Value_Shifter);
+            arm_write_register(p,Rd,Res);
     		break;
     	default :
     		break;
@@ -185,9 +202,9 @@ int arm_data_processing(arm_core p, uint32_t ins) {
 
 
     // MISE A JOUR RD SAUF TST, TEQ, CMP, CMN
-    if (((ins & MASK_MAJREG) >> 23) != 0b10) {
+    /*if (((ins & MASK_MAJREG) >> 23) != 0b10) {
     	arm_write_register(p,Rd,Res);
-    }
+    }*/
 
 
     // MISE A JOUR DES FLAGS OU CPSR
@@ -196,15 +213,24 @@ int arm_data_processing(arm_core p, uint32_t ins) {
     		arm_write_cpsr(p,arm_read_spsr(p));
     	} else {
 	        uint32_t cpsr = arm_read_cpsr(p);
-	    
+	   
+            int a = get_bit(Value_Rn, 31);
+            int b = get_bit(Value_Shifter, 31);
+            int r = get_bit(Res, 31);
+            int leC = ((a && b) || ((!(r)) && (a!=b)));
+            int leV = ((a==b) && (b != r));
+
+            printf("a=%i b=%i r=%i\n", a,b,r);
+            printf("C=%i\n", leC);
+            printf("V=%i\n", leV);
+
 	        change_bit(&cpsr, N, get_bit(Res, 31));
 	        change_bit(&cpsr, Z, Res==0);
 	        if ((SUB <= ((ins & MASK_OPCODE)) >> 21) && (((ins & MASK_OPCODE) >> 21) <= CMN)) {
-	            change_bit(&cpsr, C, get_bit(Res, 32));
-	            change_bit(&cpsr, V, (get_bit(Value_Rn, 31) == get_bit(Value_Shifter, 31)) && (get_bit(Value_Rn, 31) != get_bit(Res, 31)));
+	            change_bit(&cpsr, C, leC);
+	            change_bit(&cpsr, V, leV);
 	        }
-	        if (force_carry) cpsr=set_bit(cpsr, C);
-
+            if (force_carry) cpsr=set_bit(cpsr, C);
 	        arm_write_cpsr(p, cpsr);
 	    }
 	}
@@ -212,9 +238,9 @@ int arm_data_processing(arm_core p, uint32_t ins) {
 
     /* PRINT DE TEST*/
     printf("r%i <- (", Rd);
-    if ((((ins & MASK_OPCODE) >> 21) != MOV) && (((ins & MASK_OPCODE) >> 21) != MVN)) printf("%li", Value_Rn);
+    if ((((ins & MASK_OPCODE) >> 21) != MOV) && (((ins & MASK_OPCODE) >> 21) != MVN)) printf("%i", Value_Rn);
     print_codeop((ins & MASK_OPCODE) >> 21);
-    printf("%li) = %li\n", Value_Shifter, Res);
+    printf("%i) = %i\n", Value_Shifter, Res);
     print_flags(p);
 	/* PRINT DE TEST*/
 
