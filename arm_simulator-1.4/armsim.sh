@@ -1,4 +1,4 @@
-PORT=1357
+PORT=4455
 OPT="--trace-registers --trace-memory"
 
 xterm -e "arm-none-eabi-gdb -ex \"file $1\"\
