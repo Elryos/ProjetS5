@@ -1,4 +1,4 @@
-PORT=60683
+PORT=1357
 OPT="--trace-registers --trace-memory"
 
 LIGNE=$(grep -n "swi" $1.s | cut -d: -f1)
