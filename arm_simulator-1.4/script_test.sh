@@ -6,9 +6,9 @@ then
     rm logsim.out
 fi
 
-if [ -f logus.out ]
+if [ -f logUs.out ]
 then
-    rm logus.out
+    rm logUs.out
 fi
 
 if [ -f cmdSim.txt ]
@@ -36,10 +36,12 @@ file $1
 target remote :$PORTSIM
 load
 set logging file logUs.out
-set logging on" >> cmdUs.txt
+set logging on
+b 1
+cont" >> cmdUs.txt
 
 
-for cpt in `seq 1 100`
+for cpt in `seq 1 200`
 do 
 	echo "printf \"------------------------------------\n\"
 i r
@@ -53,18 +55,18 @@ printf \"------------------------------------\n\n\"
 s" >> cmdUs.txt
 done
 
-echo "set loggging off
-q" >> cmdSim.txt 
-echo "set loggging off
-q" >> cmdUs.txt
 	
 
 
 
 arm-none-eabi-gdb -x cmdSim.txt
+					-ex "set logging off"\
+					-ex "q"\
 
 
-xterm -e "arm-none-eabi-gdb -x cmdUs.txt" &
+./arm_simulator --gdb-port $PORTSIM $OPTION &
 
 
-./arm_simulator --gdb-port $PORTSIM $OPTION
+xterm -e "arm-none-eabi-gdb -x cmdUs.txt
+							-ex \"set logging off\"\
+		  					-ex \"q\""
