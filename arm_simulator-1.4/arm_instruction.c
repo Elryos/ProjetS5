@@ -43,15 +43,6 @@ Contact: Guillaume.Huard@imag.fr
 #define MASK_V 0b1 << 28
 #define MASK_TYPE 0b111 << 25
 
-#define DATA_PROCESSING_SHIFT 0b000
-#define DATA_PROCESSING_IMMEDIATE 0b001
-#define LOAD_STORE_IMMEDIATE 0b010
-#define LOAD_STORE_REGISTER 0b011
-#define LOAD_STORE_MULTIPLE 0b100
-#define BRANCH 0b101
-#define LOAD_STORE_COPROC 0b110
-#define COPROCESSOR_OTHERS_SWI 0b111
-
 
 static int arm_execute_instruction(arm_core p) {
     
@@ -62,7 +53,8 @@ static int arm_execute_instruction(arm_core p) {
     uint8_t c = (cpsr & MASK_C )>> 29;
     uint8_t v = (cpsr & MASK_V )>> 28;
 
-    if (arm_fetch(p, &ins)) return 1;
+    int result = arm_fetch(p, &ins);
+    if (result) return result;
 
 //------------------------------------------------------- Test des differentes conditions
     switch ((ins & MASK_COND) >> 28) {
@@ -159,7 +151,7 @@ int arm_step(arm_core p) {
     return result;
 }
 
-
+//------------------------------------------------------- Addressing Mode 1
 uint32_t shifter_operand(arm_core p, uint32_t ins, uint8_t * c) {
     uint32_t Rm = arm_read_register(p, (ins & MASK_RM) >> 0);
     uint32_t Rs;
@@ -182,7 +174,6 @@ uint32_t shifter_operand(arm_core p, uint32_t ins, uint8_t * c) {
         case (ROR) :
             return ror(Rm, Rs);
         default :
-            break;
+            return 0;
     }
-    return 0;
 }

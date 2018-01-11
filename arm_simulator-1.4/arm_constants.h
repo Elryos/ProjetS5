@@ -20,6 +20,7 @@ Contact: Guillaume.Huard@imag.fr
 	 700 avenue centrale, domaine universitaire
 	 38401 Saint Martin d'Hères
 */
+
 #ifndef __ARM_CONSTANTS_H__
 #define __ARM_CONSTANTS_H__
 #include <stdint.h>
@@ -41,6 +42,16 @@ Contact: Guillaume.Huard@imag.fr
 #define MOV 0b1101
 #define BIC 0b1110
 #define MVN 0b1111
+
+/* ARM Instructions Types*/
+#define DATA_PROCESSING_SHIFT 	  0b000
+#define DATA_PROCESSING_IMMEDIATE 0b001
+#define LOAD_STORE_IMMEDIATE 	  0b010
+#define LOAD_STORE_REGISTER 	  0b011
+#define LOAD_STORE_MULTIPLE 	  0b100
+#define BRANCH 					  0b101
+#define LOAD_STORE_COPROC 		  0b110
+#define COPROCESSOR_OTHERS_SWI 	  0b111
 
 /* ARM Conditions */
 #define EQ 0b0000	// Equal / equals zero	Z
@@ -80,7 +91,7 @@ Contact: Guillaume.Huard@imag.fr
 #define SOFTWARE_INTERRUPT      3
 #define PREFETCH_ABORT          4
 #define DATA_ABORT              5
-#define IMPRECISE_ABORT			6	//Inutile ARMv6
+#define IMPRECISE_ABORT			6	// ARMv6
 #define INTERRUPT               7
 #define FAST_INTERRUPT          8
 
@@ -106,5 +117,6 @@ Contact: Guillaume.Huard@imag.fr
 char *arm_get_exception_name(unsigned char exception);
 char *arm_get_mode_name(uint8_t mode);
 char *arm_get_register_name(uint8_t reg);
+char *arm_get_opcode_name(uint8_t code);
 
 #endif
