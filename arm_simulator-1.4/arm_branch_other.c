@@ -56,12 +56,24 @@ int arm_coprocessor_others_swi(arm_core p, uint32_t ins) {
 }
 
 int arm_miscellaneous(arm_core p, uint32_t ins) {
-    // MRS ?
-    if (get_bit(ins,22)) {
-        if (!arm_current_mode_has_spsr(p)) return UNDEFINED_INSTRUCTION;
-        arm_write_register(p, get_bits(ins,15,12), arm_read_spsr(p));
+    // uint32_t val, field_mask;
+    
+    if (get_bit(ins, 21)) {
+        // //MSR
+        // if (get_bit(25))
+        //     val = ror(ins & 0xFF, ((ins >> 8) & 0xF) * 2);
+        // else 
+        //     val = arm_read_register(p, get_bits(ins,3,0));
+
+
     } else {
-        arm_write_register(p, get_bits(ins,15,12), arm_read_cpsr(p));
+        //MRS
+        if (get_bit(ins,22)) {
+            if (!arm_current_mode_has_spsr(p)) return UNDEFINED_INSTRUCTION;
+            arm_write_register(p, get_bits(ins,15,12), arm_read_spsr(p));
+        } else {
+            arm_write_register(p, get_bits(ins,15,12), arm_read_cpsr(p));
+        }
     }
 
     return 0;

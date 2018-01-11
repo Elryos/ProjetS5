@@ -34,7 +34,8 @@ void arm_exception(arm_core p, unsigned char exception) {
     /* We only support RESET initially */
     /* Semantics of reset interrupt (ARM manual A2-18) */
    if (exception == RESET) {
-        arm_write_cpsr(p, 0x1d3 | Exception_bit_9);
+        arm_write_cpsr(p, 0xd3 | Exception_bit_9);
+        arm_write_register(p, SP, 0x800);
 
    } else {
    		uint32_t cpsr = arm_read_cpsr(p);

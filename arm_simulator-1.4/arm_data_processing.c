@@ -76,7 +76,7 @@ int arm_data_processing(arm_core p, uint32_t ins) {
             Res = Value_Rn + Value_Shifter + get_bit(arm_read_cpsr(p), C);
             break;
         case (SBC) :
-            Res = Value_Rn + Value_Shifter - !(get_bit(arm_read_cpsr(p), C));
+            Res = Value_Rn - Value_Shifter - !(get_bit(arm_read_cpsr(p), C));
             Value_Shifter*=-1;
             break;
         case (RSC) :
@@ -89,6 +89,8 @@ int arm_data_processing(arm_core p, uint32_t ins) {
             Res = Value_Rn & Value_Shifter;
             break;
         case (TEQ) :
+            // CAS PARTICULIER MSR
+            if (get_bit(ins,20)) arm_miscellaneous(p,ins);
             Res = Value_Rn ^ Value_Shifter;
             break;
         case (CMP) :
@@ -98,6 +100,8 @@ int arm_data_processing(arm_core p, uint32_t ins) {
             Value_Shifter*=-1;
             break;
         case (CMN) :
+            // CAS PARTICULIER MSR
+            if (get_bit(ins,20)) arm_miscellaneous(p,ins);
     		Res = Value_Rn + Value_Shifter;
     		break;
     	case (ORR) :
@@ -135,7 +139,7 @@ int arm_data_processing(arm_core p, uint32_t ins) {
 
 	        change_bit(&cpsr, N, get_bit(Res, 31));
 	        change_bit(&cpsr, Z, Res==0);
-            change_bit(&cpsr, C, shifter_carry_out);
+            if ((ins & MASK_I) >> 25) change_bit(&cpsr, C, shifter_carry_out);
 	        
 	        if ((SUB <= ((ins & MASK_OPCODE)) >> 21) && (((ins & MASK_OPCODE) >> 21) <= CMN)) {
 	            if (!shifter_carry_out) change_bit(&cpsr, C, ((a && b) || ((!(r)) && (a!=b))));
