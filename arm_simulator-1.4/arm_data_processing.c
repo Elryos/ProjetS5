@@ -47,10 +47,13 @@ int arm_data_processing(arm_core p, uint32_t ins) {
     
 
     // LECTURE DE RM, SI IMMEDIATE OU SHIFT OPERAND
-    if ((ins & MASK_I) >> 25)
+    if ((ins & MASK_I) >> 25) {
     	Value_Shifter = ror(ins & 0xFF, ((ins >> 8) & 0xF) * 2);
-    else 
+        shifter_carry_out = get_bit(Value_Shifter, 31);
+    }
+    else {
     	Value_Shifter = shifter_operand(p, ins, &shifter_carry_out);
+    }
 
     
     // CALCUL DE L'OPERATION CORRESPONDANTE
