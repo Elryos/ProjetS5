@@ -1,6 +1,6 @@
-PORTSIM=4455
-OPTION="--trace-registers --trace-memory"
-TAILLE=102
+PORTFIX=4455
+OPTIONS="--trace-registers --trace-memory"
+TAILLE=202
 
 if [ $# -eq 2 ]
 then 
@@ -12,14 +12,14 @@ then
     rm Sim.out
 fi
 
-if [ -f Us.out ]
-then
-    rm Us.out
-fi
-
 if [ -f cmdSim.txt ]
 then
 	rm cmdSim.txt
+fi
+
+if [ -f Us.out ]
+then
+    rm Us.out
 fi
 
 if [ -f cmdUs.txt ]
@@ -28,7 +28,7 @@ then
 fi
 
 
-echo "set pagination off
+echo "set height unlimited
 file $1
 target sim
 load
@@ -37,9 +37,9 @@ set logging on
 b 1
 run" >> cmdSim.txt
 
-echo "set pagination off
+echo "set height unlimited
 file $1
-target remote :$PORTSIM
+target remote :$PORTFIX
 load
 set logging file Us.out
 set logging on
@@ -70,11 +70,11 @@ q" >> cmdUs.txt
 
 
 
-arm-none-eabi-gdb -x cmdSim.txt
+xterm -e "arm-none-eabi-gdb -x cmdSim.txt"
 
 
-./arm_simulator --gdb-port $PORTSIM $OPTION &
+./arm_simulator --gdb-port $PORTFIX $OPTIONS &
 
+xterm &
 
 xterm -e "arm-none-eabi-gdb -x cmdUs.txt"
-
