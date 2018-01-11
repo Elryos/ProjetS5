@@ -75,6 +75,4 @@ xterm -e "arm-none-eabi-gdb -x cmdSim.txt"
 
 ./arm_simulator --gdb-port $PORTFIX $OPTIONS &
 
-xterm &
-
 xterm -e "arm-none-eabi-gdb -x cmdUs.txt"
