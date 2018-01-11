@@ -139,7 +139,7 @@ int arm_data_processing(arm_core p, uint32_t ins) {
 
 	        change_bit(&cpsr, N, get_bit(Res, 31));
 	        change_bit(&cpsr, Z, Res==0);
-            if ((ins & MASK_I) >> 25) change_bit(&cpsr, C, shifter_carry_out);
+            if (!(ins & MASK_I) >> 25) change_bit(&cpsr, C, shifter_carry_out);
 	        
 	        if ((SUB <= ((ins & MASK_OPCODE)) >> 21) && (((ins & MASK_OPCODE) >> 21) <= CMN)) {
 	            if (!shifter_carry_out) change_bit(&cpsr, C, ((a && b) || ((!(r)) && (a!=b))));
