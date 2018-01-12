@@ -50,8 +50,9 @@ int arm_data_processing(arm_core p, uint32_t ins) {
     // LECTURE DE RM, SI IMMEDIATE OU SHIFT OPERAND
     if ((ins & MASK_I) >> 25) {
     	Value_Shifter = ror(ins & 0xFF, ((ins >> 8) & 0xF) * 2);
-        if (get_bits(ins,11,8)) carry_out = get_bit(arm_read_cpsr(p), C);
-        else carry_out = get_bit(Value_Shifter, 31);
+        carry_out = get_bit(arm_read_cpsr(p), C);
+        /*if (get_bits(ins,11,8)) 
+        else carry_out = get_bit(Value_Shifter, 31);*/
     }
     else {
     	Value_Shifter = shifter_operand(p, ins, &carry_out);
@@ -131,14 +132,17 @@ int arm_data_processing(arm_core p, uint32_t ins) {
     	if (Rd==PC && arm_current_mode_has_spsr(p)) {
     		arm_write_cpsr(p,arm_read_spsr(p));
     	} else {
+            
             uint8_t a = get_bit(Value_Rn, 31);
-            if (Value_Rn && (opcode ==SUB || opcode==RSB || opcode==SBC || opcode ==RSC || opcode==CMP))
-                a = get_bit(~Value_Rn, 31);
-            if (opcode==ADC && get_bit(arm_read_cpsr(p), C)) 
+            
+            if (opcode==ADC && get_bit(arm_read_cpsr(p), C))
                 Value_Shifter++;
             if ((opcode==SBC || opcode==RSB) && !(get_bit(arm_read_cpsr(p), C)))
                 Value_Shifter--;
+
             uint8_t b = get_bit(Value_Shifter, 31);
+            if (Value_Rn && (opcode ==SUB || opcode==RSB || opcode==SBC || opcode ==RSC || opcode==CMP))
+            	b = get_bit(~Value_Shifter, 31);
 
         
             printf("Value_Shifter = %i\n", Value_Shifter);

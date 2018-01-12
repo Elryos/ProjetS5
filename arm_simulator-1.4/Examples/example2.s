@@ -13,4 +13,5 @@ main:
     ldrb r2, [r1]
     add r1, r1, #3
     ldrb r3, [r1]
+    
     swi 0x123456
