@@ -1,7 +1,7 @@
 .global main
 .text
 
-@ 
+@Il ecrit le mot don dans le sens inverse dans R3
 
 func:	
 		LDR R0, =don
@@ -30,3 +30,4 @@ main:
 .data
 don:
     .word 0x12345678
+
