@@ -132,9 +132,14 @@ int arm_data_processing(arm_core p, uint32_t ins) {
     		arm_write_cpsr(p,arm_read_spsr(p));
     	} else {
             uint8_t a = get_bit(Value_Rn, 31);
+            if (Value_Rn && (opcode ==SUB || opcode==RSB || opcode==SBC || opcode ==RSC || opcode==CMP))
+                a = get_bit(~Value_Rn, 31);
+            if (opcode==ADC && get_bit(arm_read_cpsr(p), C)) 
+                Value_Shifter++;
+            if ((opcode==SBC || opcode==RSB) && !(get_bit(arm_read_cpsr(p), C)))
+                Value_Shifter--;
             uint8_t b = get_bit(Value_Shifter, 31);
-            if (Value_Shifter && (opcode ==SUB || opcode==RSB || opcode==SBC || opcode ==RSC || opcode==CMP))
-                b = get_bit(~Value_Shifter, 31);
+
         
             printf("Value_Shifter = %i\n", Value_Shifter);
             uint8_t r = get_bit(Res, 31);
