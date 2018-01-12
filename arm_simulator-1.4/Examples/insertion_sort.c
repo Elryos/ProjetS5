@@ -1,6 +1,6 @@
 #define N 16
 
-
+/*
 void swap (int i, int j,int t[]) {
 	int temp;
 	temp = t[i];
@@ -40,9 +40,8 @@ int main(void)
 	tri_segmentation(t,0,N-1);
 	return 0;
 }
+*/
 
-
-/*
 int main(void) {
 	int t[N] = {5,16,8,8192,54,8,4096,9,-6,65,2,-1337,1024,2048,1,7};
 	int i,j,p;
@@ -59,4 +58,4 @@ int main(void) {
 	
 	return 0;
 }
-*/
+

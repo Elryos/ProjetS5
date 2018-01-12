@@ -39,6 +39,7 @@ Contact: Guillaume.Huard@imag.fr
 
 int arm_data_processing(arm_core p, uint32_t ins) {
     
+    int opcode = (ins & MASK_OPCODE) >> 21 ;
     uint32_t Value_Rn = arm_read_register(p, (ins & MASK_RN) >> 16);
     uint8_t Rd = (ins & MASK_RD) >> 12;
     uint32_t Value_Shifter;
@@ -67,11 +68,9 @@ int arm_data_processing(arm_core p, uint32_t ins) {
     		break;
     	case (SUB) :
             Res = Value_Rn - Value_Shifter ;  
-            Value_Shifter*=-1;
             break;
         case (RSB) :
             Res = Value_Shifter - Value_Rn ;    
-            Value_Rn*=-1;
             break;
         case (ADD) :
             Res = Value_Rn + Value_Shifter ;   
@@ -81,11 +80,9 @@ int arm_data_processing(arm_core p, uint32_t ins) {
             break;
         case (SBC) :
             Res = Value_Rn - Value_Shifter - !(get_bit(arm_read_cpsr(p), C));
-            Value_Shifter*=-1;
             break;
         case (RSC) :
-            Res = Value_Shifter - Value_Rn - !(get_bit(arm_read_cpsr(p), C));
-            Value_Rn*=-1;            
+            Res = Value_Shifter - Value_Rn - !(get_bit(arm_read_cpsr(p), C));           
             break;
         case (TST) :
             // CAS PARTICULIER MRS
@@ -101,7 +98,6 @@ int arm_data_processing(arm_core p, uint32_t ins) {
             // CAS PARTICULIER MRS
             if (!get_bit(ins,20)) arm_miscellaneous(p,ins);
             Res = Value_Rn - Value_Shifter;
-            Value_Shifter*=-1;
             break;
         case (CMN) :
             // CAS PARTICULIER MSR
@@ -137,6 +133,9 @@ int arm_data_processing(arm_core p, uint32_t ins) {
     	} else {
             uint8_t a = get_bit(Value_Rn, 31);
             uint8_t b = get_bit(Value_Shifter, 31);
+            if (Value_Shifter && (opcode ==SUB || opcode==RSB || opcode==SBC || opcode ==RSC || opcode==CMP))
+                b = get_bit(~Value_Shifter, 31);
+        
             printf("Value_Shifter = %i\n", Value_Shifter);
             uint8_t r = get_bit(Res, 31);
 
@@ -146,7 +145,7 @@ int arm_data_processing(arm_core p, uint32_t ins) {
 	        change_bit(&cpsr, Z, Res==0);
             change_bit(&cpsr, C, carry_out);
 	        
-	        if ((SUB <= ((ins & MASK_OPCODE)) >> 21) && (((ins & MASK_OPCODE) >> 21) <= CMN)) {
+	        if (SUB <= opcode && opcode <= CMN && opcode!= TST && opcode != TEQ) {
 	            change_bit(&cpsr, C, (carry_out || (a && b) || ((!(r)) && (a!=b))));
 	            change_bit(&cpsr, V, ((a==b) && (b != r)));
 	        }
