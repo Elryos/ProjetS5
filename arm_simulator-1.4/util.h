@@ -43,7 +43,6 @@ Contact: Guillaume.Huard@imag.fr
 void change_bit(uint32_t * s, uint8_t n, uint8_t val);
 uint32_t asr(uint32_t value, uint8_t shift);
 uint32_t ror(uint32_t value, uint8_t rotation);
-uint8_t highest_bit(uint32_t x);
 
 int is_big_endian();
 #endif

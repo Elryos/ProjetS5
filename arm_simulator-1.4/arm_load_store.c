@@ -88,7 +88,6 @@ int arm_load_store(arm_core p, uint32_t ins) {
 	} else {
 		// STORE
 		if (!is_P && is_W ) val = arm_read_usr_register(p, Rd);	else val = arm_read_register(p, Rd);
-
 		if        (is_half) {
 			res = arm_write_half(p, address, (uint16_t) val);
 		} else if (is_byte) {
@@ -97,6 +96,15 @@ int arm_load_store(arm_core p, uint32_t ins) {
 			res = arm_write_word(p, address, val);
 		}	
 	}
+
+	/* PRINT DE TEST */
+	if (is_load) printf("LDR"); 		
+	else printf("STR");
+	printf(" r%i, [r%i, #%i]", Rd, Rn, addressing_mode(p, ins));
+	if (is_W) printf("!");
+	if (!is_load) printf(" #%i -> @:%u)\n", val, address);
+	else printf(" r%i <- #%i @:%u)\n", Rd, val, address);
+	/* PRINT DE TEST */
 
 	if (!is_P) address+= addressing_mode(p, ins);
 
@@ -120,6 +128,18 @@ int arm_load_store_multiple(arm_core p, uint32_t ins) {
 	uint32_t start_address = arm_read_register(p, Rn);
 	uint32_t address = start_address;
 
+	/* PRINT DE TEST */
+	if (is_load) printf("LDM");
+	else printf("STM");
+	if(is_incr) printf("I");
+	else printf("D");
+	if(is_before) printf("B ");
+	else printf("A ");
+	printf("r%i", Rn);
+	if (write_back) printf("!");
+	printf(", {");
+	/*PRINT DE TEST */
+
 	if (!is_incr)
 		for (Ri=0;Ri<16;Ri++) 
 			if((ins >> Ri) & 1) 
@@ -129,6 +149,11 @@ int arm_load_store_multiple(arm_core p, uint32_t ins) {
 
 	for (Ri=0;Ri<16;Ri++) {
 		if ((ins >> Ri) & 1) {		
+	
+			/* PRINT DE TEST */
+			printf(" %i,", Ri);
+			/* PRINT DE TEST */
+	
 			if (is_load) {
 				//LOAD
 				arm_read_word(p, address, &val);
@@ -140,12 +165,15 @@ int arm_load_store_multiple(arm_core p, uint32_t ins) {
 				res = arm_write_word(p,address,val);
 			}
 
-			//address = is_incr ? address+4 : address-4 ;
 			address+=4;
 			Number_Of_Set_Bits++;
 		}
 	}
 
+	/* PRINT DE TEST */
+	printf("}\n");
+	/* PRINT DE TEST */
+	
 	if (write_back) {
 		if (is_incr) { 
 			arm_write_register(p, Rn, start_address+Number_Of_Set_Bits*4);

@@ -152,27 +152,41 @@ int arm_step(arm_core p) {
 }
 
 //------------------------------------------------------- Addressing Mode 1
-uint32_t shifter_operand(arm_core p, uint32_t ins, uint8_t * c) {
+uint32_t shifter_operand(arm_core p, uint32_t ins, uint8_t * carry_out) {
     uint32_t Rm = arm_read_register(p, (ins & MASK_RM) >> 0);
-    uint32_t Rs;
-    *c = 0;
+    uint32_t shift;
 
     if ((ins & MASK_BY_REGISTER) >> 4) {
-        Rs = arm_read_register(p, (ins & MASK_RS_REGISTER) >> 8);
+        shift = arm_read_register(p, (ins & MASK_RS_REGISTER) >> 8);
     } else {
-        Rs = (ins & MASK_RS_IMMEDIATE) >> 7;
+        shift = (ins & MASK_RS_IMMEDIATE) >> 7;
     }
+
+    // A shift by 32 is encoded by shift_imm == 0 (for LSL and ASR)
+    if (!shift && get_bit(ins,6) && get_bit(ins,4)) shift = 32;
+    
+    if (!shift) *carry_out = get_bit(arm_read_cpsr(p), C);
+
 
     switch ((ins & MASK_SHIFT) >> 5) {
         case (LSL) :
-           	*c = (highest_bit(Rm) + Rs) > 31;
-            return Rm << Rs;
+            if (shift) *carry_out = get_bit(Rm, 32 - shift);
+            return Rm << shift;
         case (LSR) :
-            return Rm >> Rs;
+            if (shift) *carry_out = get_bit(Rm, shift - 1);
+            return Rm >> shift;
         case (ASR) :
-            return asr(Rm, Rs);
+            *carry_out = get_bit(Rm, (int32_t) shift - 1);
+            return asr(Rm, (int32_t) shift - 1);
         case (ROR) :
-            return ror(Rm, Rs);
+            if (shift) {
+                *carry_out = get_bit(Rm, shift - 1);
+                return ror(Rm, shift);
+            } else {
+                /*RRX*/
+                *carry_out = Rm & 1;
+                return Rm >> 1 | ((get_bit(arm_read_cpsr(p), C) << 31));
+            }
         default :
             return 0;
     }

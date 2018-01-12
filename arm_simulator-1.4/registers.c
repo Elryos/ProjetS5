@@ -26,8 +26,8 @@ Contact: Guillaume.Huard@imag.fr
 #include <stdlib.h>
 
 registers registers_create() {
-    uint32_t * r = malloc(sizeof(uint32_t[37]));			//registers representés par un tableau de taille 37
-    return r;												//details du tableau dans registers.h
+    uint32_t * r = malloc(sizeof(uint32_t[37]));
+    return r;
 }
 
 void registers_destroy(registers r) {

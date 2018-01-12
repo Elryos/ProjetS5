@@ -43,16 +43,17 @@ int arm_data_processing(arm_core p, uint32_t ins) {
     uint8_t Rd = (ins & MASK_RD) >> 12;
     uint32_t Value_Shifter;
     uint32_t Res;
-    uint8_t shifter_carry_out=0;
+    uint8_t carry_out=0;
     
 
     // LECTURE DE RM, SI IMMEDIATE OU SHIFT OPERAND
     if ((ins & MASK_I) >> 25) {
     	Value_Shifter = ror(ins & 0xFF, ((ins >> 8) & 0xF) * 2);
-        shifter_carry_out = get_bit(Value_Shifter, 31);
+        if (get_bits(ins,11,8)) carry_out = get_bit(arm_read_cpsr(p), C);
+        else carry_out = get_bit(Value_Shifter, 31);
     }
     else {
-    	Value_Shifter = shifter_operand(p, ins, &shifter_carry_out);
+    	Value_Shifter = shifter_operand(p, ins, &carry_out);
     }
 
     
@@ -88,12 +89,12 @@ int arm_data_processing(arm_core p, uint32_t ins) {
             break;
         case (TST) :
             // CAS PARTICULIER MRS
-            if (get_bit(ins,20)) arm_miscellaneous(p,ins);
+            if (!get_bit(ins,20)) arm_miscellaneous(p,ins);
             Res = Value_Rn & Value_Shifter;
             break;
         case (TEQ) :
             // CAS PARTICULIER MSR
-            if (get_bit(ins,20)) arm_miscellaneous(p,ins);
+            if (!get_bit(ins,20)) arm_miscellaneous(p,ins);
             Res = Value_Rn ^ Value_Shifter;
             break;
         case (CMP) :
@@ -104,7 +105,7 @@ int arm_data_processing(arm_core p, uint32_t ins) {
             break;
         case (CMN) :
             // CAS PARTICULIER MSR
-            if (get_bit(ins,20)) arm_miscellaneous(p,ins);
+            if (!get_bit(ins,20)) arm_miscellaneous(p,ins);
     		Res = Value_Rn + Value_Shifter;
     		break;
     	case (ORR) :
@@ -136,32 +137,41 @@ int arm_data_processing(arm_core p, uint32_t ins) {
     	} else {
             uint8_t a = get_bit(Value_Rn, 31);
             uint8_t b = get_bit(Value_Shifter, 31);
+            printf("Value_Shifter = %i\n", Value_Shifter);
             uint8_t r = get_bit(Res, 31);
 
 	        uint32_t cpsr = arm_read_cpsr(p);
 
 	        change_bit(&cpsr, N, get_bit(Res, 31));
 	        change_bit(&cpsr, Z, Res==0);
-            if (get_bits(ins,11,8)) change_bit(&cpsr, C, shifter_carry_out);
+            change_bit(&cpsr, C, carry_out);
 	        
 	        if ((SUB <= ((ins & MASK_OPCODE)) >> 21) && (((ins & MASK_OPCODE) >> 21) <= CMN)) {
-	            change_bit(&cpsr, C, (shifter_carry_out || (a && b) || ((!(r)) && (a!=b))));
+	            change_bit(&cpsr, C, (carry_out || (a && b) || ((!(r)) && (a!=b))));
 	            change_bit(&cpsr, V, ((a==b) && (b != r)));
 	        }
 
-	        arm_write_cpsr(p, cpsr);
-	    }
-	}
+            arm_write_cpsr(p, cpsr);
+            /* PRINT DE TEST */
+        	printf(" N=%i  Z=%i  C=%i  V=%i\n", cpsr >> N & 1,cpsr >> Z & 1,cpsr >> C & 1,cpsr >> V & 1);
+            /* PRINT DE TEST */
+        }
+    }
 
 
-    /* PRINT DE TEST*/
+    /* PRINT DE TEST BACKUP
     printf("r%i <- (", Rd);
     if ((((ins & MASK_OPCODE) >> 21) != MOV) && (((ins & MASK_OPCODE) >> 21) != MVN)) printf("%i", Value_Rn);
     printf(" %s ",arm_get_opcode_name(((ins & MASK_OPCODE) >> 21)));
     printf("%i) = %i\n", Value_Shifter, Res);
-	uint32_t cpsr = arm_read_cpsr(p);	   
-	printf("N=%i  Z=%i  C=%i  V=%i\n", cpsr >> N & 1,cpsr >> Z & 1,cpsr >> C & 1,cpsr >> V & 1);
-	/* PRINT DE TEST*/
+     PRINT DE TEST BACKup*/
+
+    printf("%s",arm_get_opcode_name(((ins & MASK_OPCODE) >> 21)));
+    if ((ins & MASK_STATUS) >> 20) printf("S");
+    printf(" r%i, ", Rd);
+    if ((((ins & MASK_OPCODE) >> 21) != MOV) && (((ins & MASK_OPCODE) >> 21) != MVN)) printf("r%i, ", (ins & MASK_RN) >> 16);
+    printf("#%i\n", Value_Shifter);
+
 
     return 0;
 }

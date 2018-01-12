@@ -1,6 +1,8 @@
 .global main
 .text
 
+@ 
+
 func:	
 		LDR R0, =don
 		MOV R1, #0
@@ -28,4 +30,3 @@ main:
 .data
 don:
     .word 0x12345678
-
